@@ -6,12 +6,17 @@ const resultBox = document.getElementById("result");
 
 let selectedFile = null;
 
-// ================= FILE SELECT =================
-dropZone.addEventListener("click", () => fileInput.click());
+// ================= CLICK TO SELECT =================
+dropZone.addEventListener("click", () => {
+  fileInput.click();
+});
 
+// ================= FILE SELECT =================
 fileInput.addEventListener("change", () => {
-  selectedFile = fileInput.files[0];
-  showFile();
+  if (fileInput.files.length > 0) {
+    selectedFile = fileInput.files[0];
+    showFile();
+  }
 });
 
 // ================= DRAG DROP =================
@@ -26,9 +31,13 @@ dropZone.addEventListener("dragleave", () => {
 
 dropZone.addEventListener("drop", (e) => {
   e.preventDefault();
-  selectedFile = e.dataTransfer.files[0];
+
+  if (e.dataTransfer.files.length > 0) {
+    selectedFile = e.dataTransfer.files[0];
+    showFile();
+  }
+
   dropZone.classList.remove("dragover");
-  showFile();
 });
 
 // ================= SHOW FILE =================
@@ -39,12 +48,14 @@ function showFile() {
 // ================= ANALYZE =================
 async function analyzeResume() {
   if (!selectedFile) {
-    alert("Please upload a resume");
+    alert("❌ Please upload a resume first");
     return;
   }
 
   const formData = new FormData();
   formData.append("resume", selectedFile);
+
+  console.log("Uploading:", selectedFile); // DEBUG
 
   resultBox.innerHTML = "⏳ Analyzing...";
 
@@ -56,28 +67,14 @@ async function analyzeResume() {
 
     const data = await res.json();
 
-    console.log("API RESPONSE:", data); // 🔥 DEBUG
-
-    // ✅ FIXED HERE
-    const score = data.score;
-    const rank = data.rank;
-    const recs = data.recommendations || [];
+    console.log("Response:", data); // DEBUG
 
     resultBox.innerHTML = `
-      <div class="score-circle">${score}%</div>
-      <div class="rank">${rank}</div>
-
-      <div class="progress-bar">
-        <div class="progress-fill" style="width:${score}%"></div>
-      </div>
-
-      <h3>Recommendations</h3>
-      <ul class="rec-list">
-        ${recs.map(r => `<li>${r}</li>`).join("")}
-      </ul>
+      <h2>${data.score}%</h2>
+      <p>${data.rank}</p>
     `;
   } catch (err) {
     console.error(err);
-    resultBox.innerHTML = "❌ Error analyzing resume";
+    resultBox.innerHTML = "❌ Upload failed";
   }
 }
