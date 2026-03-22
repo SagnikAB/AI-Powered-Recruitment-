@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_cors import CORS
@@ -9,11 +9,11 @@ import uuid
 from werkzeug.utils import secure_filename
 
 # CORE IMPORTS
-from backend.core.resume_parser import extract_text
-from backend.core.scoring_engine import score_resume
-from backend.core.ranking_engine import get_rank
-from backend.core.recommendation import recommend_skills
-from backend.core.database import init_db, save_resume, get_all_resumes
+from core.resume_parser import extract_text
+from core.scoring_engine import score_resume
+from core.ranking_engine import get_rank
+from core.recommendation import recommend_skills
+from core.database import init_db, save_resume, get_all_resumes
 # ===============================
 # APP CONFIG
 # ===============================
