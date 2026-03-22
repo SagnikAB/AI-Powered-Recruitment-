@@ -1,0 +1,94 @@
+body {
+  background: radial-gradient(circle, #020617, #000);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+nav {
+  padding: 20px;
+}
+
+.hero {
+  margin-top: 100px;
+}
+
+.card {
+  margin: 30px auto;
+  padding: 25px;
+  width: 320px;
+  background: rgba(31, 41, 55, 0.8);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #22c55e);
+  color: white;
+  cursor: pointer;
+}
+
+.result-card {
+  margin-top: 30px;
+}
+
+.tag {
+  display: inline-block;
+  margin: 5px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #374151;
+}
+
+.missing {
+  background: #ef4444;
+}
+.container {
+  width: 80%;
+  margin: auto;
+  text-align: center;
+}
+
+.subtitle {
+  opacity: 0.7;
+  margin-bottom: 20px;
+}
+
+/* HISTORY */
+.history-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 10px;
+  background: #1f2937;
+}
+
+/* CHARTS */
+.charts {
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.chart-box {
+  width: 400px;
+  background: #111827;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+/* SCORE BADGE */
+.score-badge {
+  background: #6366f1;
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: white;
+}

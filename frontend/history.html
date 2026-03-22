@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Resume History | AI Analyzer</title>
+
+<link rel="stylesheet" href="/static/style.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<nav>
+  <h2>📊 Resume Analytics</h2>
+  <a href="/">Home</a>
+</nav>
+
+<div class="container">
+
+  <h1>Resume History Dashboard</h1>
+  <p class="subtitle">Track your performance over time</p>
+
+  <!-- ================= HISTORY LIST ================= -->
+  <div class="history-list">
+
+    {% if data %}
+      {% for row in data %}
+      <div class="history-card">
+        <div>
+          <strong>{{ row[1] }}</strong>
+          <p>Rank: {{ row[3] }}</p>
+        </div>
+        <div>
+          <span class="score-badge">{{ row[2] }}%</span>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p>No history available.</p>
+    {% endif %}
+
+  </div>
+
+  <!-- ================= CHARTS ================= -->
+
+  <div class="charts">
+
+    <!-- Line Chart -->
+    <div class="chart-box">
+      <h3>📈 Score Trend</h3>
+      <canvas id="scoreChart"></canvas>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="chart-box">
+      <h3>🏆 Rank Distribution</h3>
+      <canvas id="rankChart"></canvas>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+
+const scores = [
+  {% for row in data %}
+    {{ row[2] }},
+  {% endfor %}
+];
+
+const labels = [
+  {% for row in data %}
+    "{{ row[1] }}",
+  {% endfor %}
+];
+
+// 📈 LINE CHART
+new Chart(document.getElementById("scoreChart"), {
+  type: "line",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Resume Score",
+      data: scores,
+      borderColor: "#6366f1",
+      backgroundColor: "rgba(99,102,241,0.2)",
+      fill: true,
+      tension: 0.4
+    }]
+  }
+});
+
+// 📊 RANK DISTRIBUTION
+const ranks = {
+  "Elite": 0,
+  "Gold": 0,
+  "Silver": 0,
+  "Bronze": 0
+};
+
+{% for row in data %}
+  if ("{{ row[3] }}".includes("Elite")) ranks["Elite"]++;
+  else if ("{{ row[3] }}".includes("Gold")) ranks["Gold"]++;
+  else if ("{{ row[3] }}".includes("Silver")) ranks["Silver"]++;
+  else ranks["Bronze"]++;
+{% endfor %}
+
+// BAR CHART
+new Chart(document.getElementById("rankChart"), {
+  type: "bar",
+  data: {
+    labels: Object.keys(ranks),
+    datasets: [{
+      label: "Rank Count",
+      data: Object.values(ranks),
+      backgroundColor: ["gold", "#f59e0b", "#9ca3af", "#92400e"]
+    }]
+  }
+});
+
+</script>
+
+</body>
+</html>
