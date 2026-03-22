@@ -1,217 +1,103 @@
-/* ================= BASE ================= */
-body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  background: linear-gradient(135deg, #020617, #0f172a);
-  color: #e5e7eb;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Resume Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-/* ================= NAVBAR ================= */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 40px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #1f2937;
-}
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css">
 
-.navbar a {
-  color: #a5b4fc;
-  text-decoration: none;
-  margin-left: 15px;
-  font-weight: 500;
-}
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
 
-.navbar a:hover {
-  color: #6366f1;
-}
+<body>
 
-/* ================= HERO ================= */
-.hero {
-  text-align: center;
-  margin-top: 60px;
-}
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+  <h2>🤖 AI Resume Analyzer</h2>
+  <a href="history.html">Dashboard</a>
+</nav>
 
-.hero h1 {
-  font-size: 36px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  -webkit-background-clip: text;
-  color: transparent;
-}
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <h1>Analyze Your Resume with AI</h1>
+  <p>Get ATS score, ranking & smart insights instantly 🚀</p>
+</section>
 
-/* ================= CONTAINER ================= */
-.container {
-  display: flex;
-  justify-content: center;
-  margin-top: 40px;
-  padding: 20px;
-}
+<!-- ================= MAIN ================= -->
+<div class="container">
+  <div class="card">
 
-/* ================= CARD ================= */
-.card {
-  background: #1e293b;
-  padding: 30px;
-  border-radius: 16px;
-  width: 420px;
-  text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  transition: 0.3s;
-}
+    <h2>📄 Upload Resume</h2>
 
-.card:hover {
-  transform: translateY(-5px);
-}
+    <!-- DROP ZONE -->
+    <div id="dropZone" class="drop-zone">
+      <p>📂 Drag & Drop Resume</p>
+      <span>or click to upload</span>
+      <input type="file" id="resumeInput" hidden>
+    </div>
 
-/* ================= INPUT ================= */
-input[type="file"] {
-  margin-top: 10px;
-  padding: 12px;
-  width: 100%;
-  border-radius: 10px;
-  border: none;
-  background: #020617;
-  color: white;
-}
+    <button id="uploadBtn">Analyze Resume</button>
 
-/* ================= BUTTON ================= */
-button {
-  margin-top: 15px;
-  padding: 12px;
-  width: 100%;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  border: none;
-  color: white;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.3s;
-}
+    <p id="loading" style="display:none;">⏳ Analyzing...</p>
 
-button:hover {
-  transform: scale(1.05);
-}
+    <div id="result"></div>
 
-/* ================= RESULT ================= */
-#result {
-  margin-top: 20px;
-}
+  </div>
+</div>
 
-/* ================= SCORE ================= */
-.score-circle {
-  font-size: 28px;
-  font-weight: bold;
-  margin: 10px 0;
-}
+<!-- ================= FOOTER ================= -->
+<footer>
+  © 2026 Sagnik Dam | AI Resume Analyzer
+</footer>
 
-.rank {
-  margin-bottom: 15px;
-  color: #a5b4fc;
-}
+<!-- ================= SCRIPT ================= -->
+<script src="./app.js"></script>
 
-/* ================= PROGRESS ================= */
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #020617;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("resumeInput");
+const uploadBtn = document.getElementById("uploadBtn");
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #22c55e);
-}
+let selectedFile = null;
 
-/* ================= KEYWORDS ================= */
-.keywords span {
-  display: inline-block;
-  background: #374151;
-  padding: 6px 10px;
-  border-radius: 8px;
-  margin: 4px;
-  font-size: 12px;
-}
+// Click upload
+dropZone.onclick = () => fileInput.click();
 
-/* ================= RECOMMENDATIONS ================= */
-.rec-list {
-  text-align: left;
-  padding-left: 20px;
-}
+fileInput.onchange = () => {
+  selectedFile = fileInput.files[0];
+  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+};
 
-/* ================= HISTORY ================= */
-.history-list {
-  margin-top: 20px;
-}
+// Drag over
+dropZone.ondragover = (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+};
 
-.history-card {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px;
-  margin-bottom: 10px;
-  border-radius: 12px;
-  background: #1f2937;
-  transition: 0.3s;
-}
+// Drag leave
+dropZone.ondragleave = () => {
+  dropZone.classList.remove("dragover");
+};
 
-.history-card:hover {
-  transform: scale(1.02);
-  background: #374151;
-}
+// Drop file
+dropZone.ondrop = (e) => {
+  e.preventDefault();
+  selectedFile = e.dataTransfer.files[0];
+  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+};
 
-.score {
-  font-weight: bold;
-  color: #22c55e;
-}
+// Upload button
+uploadBtn.onclick = () => {
+  if (!selectedFile) {
+    alert("Please upload a resume first!");
+    return;
+  }
+  uploadResume(selectedFile);
+};
+</script>
 
-/* ================= BADGE ================= */
-.score-badge {
-  background: #6366f1;
-  padding: 6px 12px;
-  border-radius: 10px;
-  color: white;
-}
-
-/* ================= CHART ================= */
-.charts {
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  justify-content: center;
-}
-
-.chart-box {
-  width: 420px;
-  background: #111827;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-
-/* ================= FOOTER ================= */
-footer {
-  text-align: center;
-  margin-top: 50px;
-  padding: 20px;
-  opacity: 0.6;
-}
-/* DROP ZONE */
-.drop-zone {
-  border: 2px dashed #6366f1;
-  padding: 30px;
-  border-radius: 12px;
-  margin-top: 15px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.drop-zone:hover {
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.drop-zone.dragover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: #22c55e;
-}
+</body>
+</html>
