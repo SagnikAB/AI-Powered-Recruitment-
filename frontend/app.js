@@ -6,56 +6,35 @@ const resultBox = document.getElementById("result");
 
 let selectedFile = null;
 
-// ================= CLICK TO SELECT =================
-dropZone.addEventListener("click", () => {
-  fileInput.click();
-});
+// CLICK
+dropZone.addEventListener("click", () => fileInput.click());
 
-// ================= FILE SELECT =================
+// SELECT
 fileInput.addEventListener("change", () => {
-  if (fileInput.files.length > 0) {
-    selectedFile = fileInput.files[0];
-    showFile();
-  }
+  selectedFile = fileInput.files[0];
+  dropZone.innerHTML = `✅ ${selectedFile.name}`;
 });
 
-// ================= DRAG DROP =================
+// DRAG
 dropZone.addEventListener("dragover", (e) => {
   e.preventDefault();
-  dropZone.classList.add("dragover");
-});
-
-dropZone.addEventListener("dragleave", () => {
-  dropZone.classList.remove("dragover");
 });
 
 dropZone.addEventListener("drop", (e) => {
   e.preventDefault();
-
-  if (e.dataTransfer.files.length > 0) {
-    selectedFile = e.dataTransfer.files[0];
-    showFile();
-  }
-
-  dropZone.classList.remove("dragover");
+  selectedFile = e.dataTransfer.files[0];
+  dropZone.innerHTML = `✅ ${selectedFile.name}`;
 });
 
-// ================= SHOW FILE =================
-function showFile() {
-  dropZone.innerHTML = `✅ ${selectedFile.name}`;
-}
-
-// ================= ANALYZE =================
+// ANALYZE
 async function analyzeResume() {
   if (!selectedFile) {
-    alert("❌ Please upload a resume first");
+    alert("Upload file first");
     return;
   }
 
   const formData = new FormData();
   formData.append("resume", selectedFile);
-
-  console.log("Uploading:", selectedFile); // DEBUG
 
   resultBox.innerHTML = "⏳ Analyzing...";
 
@@ -65,16 +44,24 @@ async function analyzeResume() {
       body: formData
     });
 
+    console.log("RAW RESPONSE:", res);
+
     const data = await res.json();
 
-    console.log("Response:", data); // DEBUG
+    console.log("JSON:", data);
+
+    // 🔥 SAFE ACCESS
+    if (!data.score) {
+      resultBox.innerHTML = "❌ API not returning score";
+      return;
+    }
 
     resultBox.innerHTML = `
-      <h2>${data.score}%</h2>
+      <h2>Score: ${data.score}%</h2>
       <p>${data.rank}</p>
     `;
   } catch (err) {
     console.error(err);
-    resultBox.innerHTML = "❌ Upload failed";
+    resultBox.innerHTML = "❌ Server error";
   }
 }
