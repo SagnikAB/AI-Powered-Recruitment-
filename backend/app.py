@@ -18,7 +18,6 @@ from core.database import init_db, save_resume, get_all_resumes
 
 # 🔥 VECTOR (PINECONE)
 from core.vector_store import store_resume, match_resume
-
 # ================= APP CONFIG =================
 app = Flask(__name__)
 CORS(app)
