@@ -5,7 +5,13 @@
   <title>AI Resume Analyzer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- SEO -->
+  <meta name="description" content="Analyze your resume with AI. Get ATS score, ranking, and smart recommendations instantly.">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="./style.css">
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
 
@@ -24,31 +30,38 @@
 </section>
 
 <!-- ================= MAIN ================= -->
-<div class="container">
+<main class="container">
   <div class="card">
 
     <h2>📄 Upload Resume</h2>
 
     <!-- DROP ZONE -->
-    <div id="dropZone" class="drop-zone">
+    <div id="dropZone" class="drop-zone" tabindex="0">
       <p>📂 Drag & Drop Resume</p>
       <span>or click to upload</span>
     </div>
 
     <!-- FILE INPUT -->
-    <input type="file" id="resumeInput" hidden>
+    <input 
+      type="file" 
+      id="resumeInput" 
+      accept=".pdf,.doc,.docx"
+      hidden
+    >
 
     <!-- BUTTON -->
     <button id="analyzeBtn">Analyze Resume</button>
 
     <!-- LOADING -->
-    <p id="loading" style="display:none;">⏳ Analyzing...</p>
+    <p id="loading" class="loading" style="display:none;">
+      ⏳ Analyzing your resume...
+    </p>
 
     <!-- RESULT -->
-    <div id="result"></div>
+    <div id="result" class="result"></div>
 
   </div>
-</div>
+</main>
 
 <!-- ================= FOOTER ================= -->
 <footer>
@@ -56,7 +69,7 @@
 </footer>
 
 <!-- ================= SCRIPT ================= -->
-<script src="./app.js"></script
+<script src="./app.js"></script>
 
 </body>
 </html>

@@ -1,77 +1,87 @@
-let selectedFile = null;
+document.addEventListener("DOMContentLoaded", () => {
 
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-const resultDiv = document.getElementById("result");
-const loading = document.getElementById("loading");
+  let selectedFile = null;
 
-// Click to upload
-dropZone.onclick = () => fileInput.click();
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const resultDiv = document.getElementById("result");
+  const loading = document.getElementById("loading");
 
-// File select
-fileInput.onchange = () => {
-  selectedFile = fileInput.files[0];
-  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
-};
-
-// Drag over
-dropZone.ondragover = (e) => {
-  e.preventDefault();
-  dropZone.classList.add("dragover");
-};
-
-// Drag leave
-dropZone.ondragleave = () => {
-  dropZone.classList.remove("dragover");
-};
-
-// Drop
-dropZone.ondrop = (e) => {
-  e.preventDefault();
-  selectedFile = e.dataTransfer.files[0];
-  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
-};
-
-// ================= MAIN FUNCTION =================
-async function analyzeResume() {
-  if (!selectedFile) {
-    alert("Upload a resume first!");
+  // Safety check
+  if (!dropZone || !fileInput) {
+    console.error("Elements not found");
     return;
   }
 
-  loading.style.display = "block";
-  resultDiv.innerHTML = "";
+  // Click upload
+  dropZone.onclick = () => fileInput.click();
 
-  const formData = new FormData();
-  formData.append("resume", selectedFile);
+  // File select
+  fileInput.onchange = () => {
+    selectedFile = fileInput.files[0];
+    dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+  };
 
-  try {
-    const res = await fetch(
-      "https://ai-powered-recruitment-production.up.railway.app/api/analyze",
-      {
-        method: "POST",
-        body: formData
-      }
-    );
+  // Drag over
+  dropZone.ondragover = (e) => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  };
 
-    const data = await res.json();
-    console.log(data);
+  // Drag leave
+  dropZone.ondragleave = () => {
+    dropZone.classList.remove("dragover");
+  };
 
-    loading.style.display = "none";
+  // Drop
+  dropZone.ondrop = (e) => {
+    e.preventDefault();
+    selectedFile = e.dataTransfer.files[0];
+    dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+  };
 
-    if (data.error) {
-      resultDiv.innerHTML = `❌ ${data.error}`;
+  // ================= ANALYZE =================
+  window.analyzeResume = async function () {
+
+    if (!selectedFile) {
+      alert("Upload a resume first!");
       return;
     }
 
-    resultDiv.innerHTML = `
-      <div class="score-circle">Score: ${data.score}%</div>
-      <div class="rank">${data.rank}</div>
-    `;
+    loading.style.display = "block";
+    resultDiv.innerHTML = "";
 
-  } catch (err) {
-    console.error(err);
-    loading.style.display = "none";
-    resultDiv.innerHTML = "❌ Server error";
-  }
-}
+    const formData = new FormData();
+    formData.append("resume", selectedFile);
+
+    try {
+      const res = await fetch(
+        "https://ai-powered-recruitment-production.up.railway.app/api/analyze",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      const data = await res.json();
+
+      loading.style.display = "none";
+
+      if (data.error) {
+        resultDiv.innerHTML = `❌ ${data.error}`;
+        return;
+      }
+
+      resultDiv.innerHTML = `
+        <div class="score-circle">Score: ${data.score}%</div>
+        <div class="rank">${data.rank}</div>
+      `;
+
+    } catch (err) {
+      console.error(err);
+      loading.style.display = "none";
+      resultDiv.innerHTML = "❌ Server error";
+    }
+  };
+
+});
