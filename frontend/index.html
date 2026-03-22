@@ -1,75 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Resume Analyzer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- SEO -->
-  <meta name="description" content="Analyze your resume with AI. Get ATS score, ranking, and smart recommendations instantly.">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="./style.css">
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Analyze your resume with AI. Get ATS score, ranking, and smart recommendations instantly."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
 </head>
-
 <body>
 
-<!-- ================= NAVBAR ================= -->
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
 <nav class="navbar">
   <h2>🤖 AI Resume Analyzer</h2>
-  <a href="history.html">Dashboard</a>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <span id="navUser" style="color:#a5b4fc;display:none;"></span>
+    <a href="history.html">Dashboard</a>
+    <a href="login.html"   id="navLogin">Login</a>
+    <a href="#"            id="navLogout" style="display:none;" onclick="logout()">Logout</a>
+  </div>
 </nav>
 
-<!-- ================= HERO ================= -->
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
 <section class="hero">
   <h1>Analyze Your Resume with AI</h1>
-  <p>Get ATS score, ranking & smart insights instantly 🚀</p>
+  <p>Get ATS score, ranking &amp; smart insights instantly 🚀</p>
 </section>
 
-<!-- ================= MAIN ================= -->
+<!-- ── Main card ──────────────────────────────────────────────────────────── -->
 <main class="container">
-  <div class="card">
+  <div class="card" style="width:520px;max-width:100%;">
 
     <h2>📄 Upload Resume</h2>
 
-    <!-- DROP ZONE -->
+    <!-- Drop zone -->
     <div id="dropZone" class="drop-zone" tabindex="0">
-      <p>📂 Drag & Drop Resume</p>
-      <span>or click to upload</span>
+      <p>📂 Drag &amp; Drop Resume</p>
+      <span>or click to upload · PDF, DOC, DOCX</span>
+    </div>
+    <input type="file" id="resumeInput" accept=".pdf,.doc,.docx" hidden/>
+
+    <!-- Job description -->
+    <div style="margin-top:1.25rem;text-align:left;">
+      <label style="font-size:0.88rem;color:#9ca3af;display:block;margin-bottom:6px;">
+        🎯 Job Description <span style="color:#6366f1;">(optional — for role-specific scoring)</span>
+      </label>
+      <textarea id="jobDesc" rows="4" placeholder="Paste the job description here to get a tailored ATS score..." style="
+        width:100%; padding:0.75rem 1rem;
+        background:#0f172a; border:1px solid #374151;
+        border-radius:10px; color:#e5e7eb;
+        font-size:0.88rem; resize:vertical;
+        font-family:inherit; outline:none;
+        transition:border 0.2s;
+      " onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#374151'"></textarea>
     </div>
 
-    <!-- FILE INPUT -->
-    <input 
-      type="file" 
-      id="resumeInput" 
-      accept=".pdf,.doc,.docx"
-      hidden
-    >
+    <button id="analyzeBtn" style="margin-top:1rem;">Analyze Resume</button>
 
-    <!-- BUTTON -->
-    <button id="analyzeBtn">Analyze Resume</button>
+    <p id="loading" class="loading" style="display:none;">⏳ Analyzing your resume...</p>
 
-    <!-- LOADING -->
-    <p id="loading" class="loading" style="display:none;">
-      ⏳ Analyzing your resume...
-    </p>
-
-    <!-- RESULT -->
-    <div id="result" class="result"></div>
-
+    <div id="result"></div>
   </div>
 </main>
 
-<!-- ================= FOOTER ================= -->
-<footer>
-  © 2026 Sagnik Dam | AI Resume Analyzer
-</footer>
+<footer>© 2026 Sagnik Dam | AI Resume Analyzer</footer>
 
-<!-- ================= SCRIPT ================= -->
-<script src="./app.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
