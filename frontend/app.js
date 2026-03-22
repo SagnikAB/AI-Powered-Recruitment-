@@ -3,12 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedFile = null;
 
   const dropZone = document.getElementById("dropZone");
-  const fileInput = document.getElementById("fileInput");
+  const fileInput = document.getElementById("resumeInput");
+  const analyzeBtn = document.getElementById("analyzeBtn");
   const resultDiv = document.getElementById("result");
   const loading = document.getElementById("loading");
 
   // Safety check
-  if (!dropZone || !fileInput) {
+  if (!dropZone || !fileInput || !analyzeBtn) {
     console.error("Elements not found");
     return;
   }
@@ -40,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
     dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
   };
 
-  // ================= ANALYZE =================
-  window.analyzeResume = async function () {
+  // Analyze button
+  analyzeBtn.onclick = async () => {
 
     if (!selectedFile) {
       alert("Upload a resume first!");
