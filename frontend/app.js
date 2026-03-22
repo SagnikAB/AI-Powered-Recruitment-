@@ -9,7 +9,7 @@ async function uploadResume(file) {
   formData.append("resume", file);
 
   try {
-    const res = await fetch("https://ai-powered-recruitment-production.up.railway.app/api/analyze", {
+    const res = await fetch("https://ai-powered-recruitment-production.up.railway.app/", {
       method: "POST",
       body: formData
     });
