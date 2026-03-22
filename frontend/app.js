@@ -1,67 +1,35 @@
-const API = "https://ai-powered-recruitment-production.up.railway.app";
+async function uploadResume(file) {
+  const resultDiv = document.getElementById("result");
+  const loading = document.getElementById("loading");
 
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-const resultBox = document.getElementById("result");
-
-let selectedFile = null;
-
-// CLICK
-dropZone.addEventListener("click", () => fileInput.click());
-
-// SELECT
-fileInput.addEventListener("change", () => {
-  selectedFile = fileInput.files[0];
-  dropZone.innerHTML = `✅ ${selectedFile.name}`;
-});
-
-// DRAG
-dropZone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-});
-
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  selectedFile = e.dataTransfer.files[0];
-  dropZone.innerHTML = `✅ ${selectedFile.name}`;
-});
-
-// ANALYZE
-async function analyzeResume() {
-  if (!selectedFile) {
-    alert("Upload file first");
-    return;
-  }
+  loading.style.display = "block";
+  resultDiv.innerHTML = "";
 
   const formData = new FormData();
-  formData.append("resume", selectedFile);
-
-  resultBox.innerHTML = "⏳ Analyzing...";
+  formData.append("resume", file);
 
   try {
-    const res = await fetch(API + "/api/analyze", {
+    const res = await fetch("https://YOUR-RAILWAY-URL/api/analyze", {
       method: "POST",
       body: formData
     });
 
-    console.log("RAW RESPONSE:", res);
-
     const data = await res.json();
+    console.log(data);
 
-    console.log("JSON:", data);
+    loading.style.display = "none";
 
-    // 🔥 SAFE ACCESS
-    if (!data.score) {
-      resultBox.innerHTML = "❌ API not returning score";
+    if (data.error) {
+      resultDiv.innerHTML = `❌ ${data.error}`;
       return;
     }
 
-    resultBox.innerHTML = `
-      <h2>Score: ${data.score}%</h2>
-      <p>${data.rank}</p>
+    resultDiv.innerHTML = `
+      <div class="score-circle">Score: ${data.score}%</div>
+      <div class="rank">${data.rank}</div>
     `;
   } catch (err) {
-    console.error(err);
-    resultBox.innerHTML = "❌ Server error";
+    loading.style.display = "none";
+    resultDiv.innerHTML = "❌ Server error";
   }
 }

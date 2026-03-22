@@ -11,43 +11,96 @@
 
 <body>
 
+<!-- ================= NAVBAR ================= -->
 <nav class="navbar">
   <h2>🤖 AI Resume Analyzer</h2>
   <a href="history.html">Dashboard</a>
 </nav>
 
+<!-- ================= HERO ================= -->
 <section class="hero">
   <h1>Analyze Your Resume with AI</h1>
   <p>Get ATS score, ranking & smart insights instantly 🚀</p>
 </section>
 
+<!-- ================= MAIN ================= -->
 <div class="container">
   <div class="card">
 
     <h2>📄 Upload Resume</h2>
 
+    <!-- DROP ZONE -->
     <div id="dropZone" class="drop-zone">
       <p>📂 Drag & Drop Resume</p>
       <span>or click to upload</span>
     </div>
 
-    <!-- FIXED ID -->
-    <input type="file" id="fileInput" hidden>
+    <!-- FILE INPUT -->
+    <input type="file" id="resumeInput" hidden>
 
-    <button onclick="analyzeResume()">Analyze Resume</button>
+    <!-- BUTTON -->
+    <button id="analyzeBtn">Analyze Resume</button>
 
+    <!-- LOADING -->
     <p id="loading" style="display:none;">⏳ Analyzing...</p>
 
+    <!-- RESULT -->
     <div id="result"></div>
 
   </div>
 </div>
 
+<!-- ================= FOOTER ================= -->
 <footer>
   © 2026 Sagnik Dam | AI Resume Analyzer
 </footer>
 
+<!-- ================= SCRIPT ================= -->
 <script src="./app.js"></script>
+
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("resumeInput");
+const analyzeBtn = document.getElementById("analyzeBtn");
+
+let selectedFile = null;
+
+// CLICK → OPEN FILE PICKER
+dropZone.onclick = () => fileInput.click();
+
+// FILE SELECT
+fileInput.onchange = () => {
+  selectedFile = fileInput.files[0];
+  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+};
+
+// DRAG OVER
+dropZone.ondragover = (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+};
+
+// DRAG LEAVE
+dropZone.ondragleave = () => {
+  dropZone.classList.remove("dragover");
+};
+
+// DROP FILE
+dropZone.ondrop = (e) => {
+  e.preventDefault();
+  selectedFile = e.dataTransfer.files[0];
+  dropZone.innerHTML = `<p>✅ ${selectedFile.name}</p>`;
+};
+
+// BUTTON CLICK
+analyzeBtn.onclick = () => {
+  if (!selectedFile) {
+    alert("Please upload a resume first!");
+    return;
+  }
+  uploadResume(selectedFile); // from app.js
+};
+</script>
 
 </body>
 </html>
