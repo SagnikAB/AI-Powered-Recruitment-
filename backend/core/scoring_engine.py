@@ -1,24 +1,34 @@
-from core.skill_engine import extract_skills
-from core.ml_model import ml_score_resume
+import re
 
 def score_resume(text):
-    total_skills = [
-        "python", "java", "c", "sql",
-        "machine learning", "data structures",
-        "algorithms", "flask", "django"
-    ]
+    text = text.lower()
+    score = 0
 
-    found_skills = extract_skills(text)
+    skills = ["python","java","c++","javascript","react","node","flask","sql","mongodb","docker","aws"]
 
-    matched = [s for s in total_skills if s in found_skills]
-    missing = [s for s in total_skills if s not in found_skills]
+    for s in skills:
+        if s in text:
+            score += 3
 
-    # 🔥 ML SCORE
-    ml_score = ml_score_resume(text)
+    ai = ["machine learning","deep learning","nlp","tensorflow","pytorch"]
 
-    # Combine scores
-    keyword_score = int((len(matched) / len(total_skills)) * 100)
+    for a in ai:
+        if a in text:
+            score += 6
 
-    final_score = int((0.6 * ml_score) + (0.4 * keyword_score))
+    if "project" in text:
+        score += 10
 
-    return final_score, matched, missing
+    if "intern" in text or "experience" in text:
+        score += 10
+
+    if "achieved" in text or "improved" in text:
+        score += 8
+
+    numbers = re.findall(r'\d+', text)
+    score += min(len(numbers) * 2, 10)
+
+    if len(text.split()) > 300:
+        score += 10
+
+    return min(score, 100)

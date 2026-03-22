@@ -1,7 +1,14 @@
-def recommend_skills(missing_skills):
-    recommendations = []
+def recommend_skills(text):
+    text = text.lower()
+    missing = []
 
-    for skill in missing_skills:
-        recommendations.append(f"Improve your {skill} skills")
+    if "machine learning" not in text:
+        missing.append("Add Machine Learning")
 
-    return recommendations
+    if "project" not in text:
+        missing.append("Add Projects")
+
+    if "intern" not in text:
+        missing.append("Add Experience")
+
+    return missing

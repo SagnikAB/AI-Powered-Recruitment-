@@ -1,46 +1,38 @@
 import sqlite3
 
-DB = "database.db"
-
-
 def init_db():
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
+    conn = sqlite3.connect("resumes.db")
+    cur = conn.cursor()
 
-    c.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS resumes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filename TEXT,
+        id INTEGER PRIMARY KEY,
+        name TEXT,
         score INTEGER,
-        rank TEXT,
-        keywords TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        rank TEXT
     )
     """)
 
     conn.commit()
     conn.close()
 
+def save_resume(name, score, rank):
+    conn = sqlite3.connect("resumes.db")
+    cur = conn.cursor()
 
-def save_resume(filename, score, keywords, rank):
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-
-    c.execute("""
-    INSERT INTO resumes (filename, score, rank, keywords)
-    VALUES (?, ?, ?, ?)
-    """, (filename, score, rank, ", ".join(keywords)))
+    cur.execute("INSERT INTO resumes (name, score, rank) VALUES (?, ?, ?)",
+                (name, score, rank))
 
     conn.commit()
     conn.close()
 
-
 def get_all_resumes():
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
+    conn = sqlite3.connect("resumes.db")
+    cur = conn.cursor()
 
-    c.execute("SELECT * FROM resumes ORDER BY id DESC")
-    data = c.fetchall()
+    cur.execute("SELECT name, score, rank FROM resumes")
+    data = cur.fetchall()
 
     conn.close()
-    return data
+
+    return [{"name": d[0], "score": d[1], "rank": d[2]} for d in data]
