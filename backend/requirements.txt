@@ -2,6 +2,6 @@ flask
 flask-cors
 werkzeug
 scikit-learn
-pinecone-client
+pinecone
 PyPDF2
 python-docx
