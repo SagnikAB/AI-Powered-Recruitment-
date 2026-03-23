@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interview · AI Resume Analyzer</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── Layout ─────────────────────────────────────────── */
+    .interview-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem;
+    }
+    .page-title {
+      font-size: 1.9rem;
+      background: linear-gradient(135deg,#6366f1,#a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.3rem;
+    }
+    .page-sub { color:#9ca3af; margin-bottom:2rem; font-size:0.9rem; }
+
+    /* ── Progress bar ───────────────────────────────────── */
+    .q-progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+    .q-dot {
+      width: 32px; height: 6px;
+      border-radius: 4px;
+      background: #1e293b;
+      transition: background 0.3s;
+    }
+    .q-dot.active   { background: #6366f1; }
+    .q-dot.answered { background: #22c55e; }
+
+    /* ── Question card ──────────────────────────────────── */
+    .q-card {
+      background: rgba(30,41,59,0.7);
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .q-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .q-num {
+      background: rgba(99,102,241,0.2);
+      border: 1px solid #6366f1;
+      color: #a5b4fc;
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .q-skill {
+      background: rgba(168,85,247,0.12);
+      border: 1px solid #a855f7;
+      color: #c084fc;
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-size: 0.78rem;
+      text-transform: capitalize;
+    }
+    .q-text {
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.55;
+      margin-bottom: 1rem;
+      color: #e2e8f0;
+    }
+    .q-textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: #0f172a;
+      border: 1px solid #374151;
+      border-radius: 10px;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      min-height: 90px;
+      transition: border 0.2s;
+    }
+    .q-textarea:focus { border-color: #6366f1; }
+    .char-count { font-size: 0.75rem; color: #6b7280; text-align:right; margin-top:4px; }
+
+    /* ── Nav buttons ────────────────────────────────────── */
+    .q-nav {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .btn-sec {
+      flex: 1;
+      padding: 0.75rem;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid #6366f1;
+      color: #a5b4fc;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-sec:hover { background: rgba(99,102,241,0.2); }
+    .btn-primary {
+      flex: 2;
+      padding: 0.75rem;
+      background: linear-gradient(135deg,#6366f1,#a855f7);
+      border: none;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary:hover { opacity:0.9; }
+    .btn-primary:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* ── Results ────────────────────────────────────────── */
+    .results-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .big-score {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      border: 4px solid #6366f1;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    .level-badge {
+      display: inline-block;
+      padding: 6px 20px;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid #6366f1;
+      color: #a5b4fc;
+      border-radius: 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .result-q-card {
+      background: rgba(15,23,42,0.7);
+      border: 1px solid #1f2937;
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .result-q-card.pass { border-left: 3px solid #22c55e; }
+    .result-q-card.warn { border-left: 3px solid #f59e0b; }
+    .result-q-card.fail { border-left: 3px solid #ef4444; }
+    .result-score-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .pill-pass { background:rgba(34,197,94,0.15); color:#22c55e; }
+    .pill-warn { background:rgba(245,158,11,0.15); color:#f59e0b; }
+    .pill-fail { background:rgba(239,68,68,0.15);  color:#ef4444; }
+    .ideal-box {
+      margin-top: 0.85rem;
+      padding: 0.75rem 1rem;
+      background: rgba(99,102,241,0.07);
+      border-left: 2px solid #6366f1;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.55;
+    }
+    .your-answer {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      font-style: italic;
+    }
+
+    /* ── Job suggestions ────────────────────────────────── */
+    .job-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+    @media(max-width:520px) { .job-grid { grid-template-columns: 1fr; } }
+    .job-card {
+      background: rgba(15,23,42,0.7);
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      transition: border-color 0.2s;
+    }
+    .job-card:hover { border-color: #6366f1; }
+    .job-card.top-pick { border-color: #22c55e; background: rgba(34,197,94,0.05); }
+    .job-title { font-size:0.95rem; font-weight:600; margin-bottom:6px; }
+    .job-match-bar {
+      height: 6px; background: #1e293b;
+      border-radius: 4px; margin-bottom: 6px; overflow:hidden;
+    }
+    .job-match-fill { height:100%; background:linear-gradient(90deg,#6366f1,#22c55e); border-radius:4px; }
+    .job-match-pct { font-size:0.78rem; color:#9ca3af; }
+    .job-missing { font-size:0.75rem; color:#f59e0b; margin-top:4px; }
+
+    /* ── Loading ────────────────────────────────────────── */
+    #loadingPanel {
+      text-align:center; padding:3rem 1rem; color:#9ca3af;
+    }
+    .spinner {
+      width:40px; height:40px;
+      border:3px solid #1e293b;
+      border-top-color:#6366f1;
+      border-radius:50%;
+      animation: spin 0.8s linear infinite;
+      margin:0 auto 1rem;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <h2>🎤 Interview Simulator</h2>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <span id="navUser" style="color:#a5b4fc;display:none;"></span>
+    <a href="index.html">Analyze</a>
+    <a href="history.html">Dashboard</a>
+    <a href="login.html" id="navLogin">Login</a>
+    <a href="#" id="navLogout" style="display:none;" onclick="logout()">Logout</a>
+  </div>
+</nav>
+
+<div class="interview-wrap">
+
+  <!-- ── Start panel ──────────────────────────────────────────────── -->
+  <div id="startPanel">
+    <h1 class="page-title">AI Interview Simulator</h1>
+    <p class="page-sub">Answer questions based on your resume skills. Get instant feedback and job title suggestions.</p>
+
+    <div class="q-card" style="text-align:center;">
+      <div style="font-size:3rem;margin-bottom:1rem;">🎤</div>
+      <h3 style="margin-bottom:0.5rem;">Ready to start?</h3>
+      <p style="color:#9ca3af;font-size:0.9rem;margin-bottom:1.5rem;">
+        We'll ask 7 questions based on skills detected in your resume.<br/>
+        Answer honestly — the AI will evaluate and suggest roles for you.
+      </p>
+
+      <div id="noResumeMsg" style="display:none;
+        background:rgba(245,158,11,0.1);border:1px solid #f59e0b;
+        color:#f59e0b;border-radius:10px;padding:12px;margin-bottom:1rem;font-size:0.88rem;">
+        ⚠️ No resume analyzed yet. <a href="index.html" style="color:#fbbf24;">Analyze your resume first →</a>
+      </div>
+
+      <button id="startBtn" class="btn-primary" style="width:100%;max-width:300px;padding:0.9rem;">
+        Start Interview →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading panel ────────────────────────────────────────────── -->
+  <div id="loadingPanel" style="display:none;">
+    <div class="spinner"></div>
+    <p id="loadingMsg">Loading questions...</p>
+  </div>
+
+  <!-- ── Questions panel ──────────────────────────────────────────── -->
+  <div id="questionsPanel" style="display:none;">
+    <h1 class="page-title">Interview Questions</h1>
+    <p class="page-sub" id="qSubtitle">Answer each question in your own words.</p>
+
+    <div class="q-progress" id="qProgress"></div>
+    <div id="questionArea"></div>
+
+    <div class="q-nav">
+      <button class="btn-sec" id="prevBtn" onclick="prevQ()">← Previous</button>
+      <button class="btn-primary" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Results panel ────────────────────────────────────────────── -->
+  <div id="resultsPanel" style="display:none;">
+    <div class="results-header">
+      <h1 class="page-title">Your Results</h1>
+      <div class="big-score" id="bigScore">--</div>
+      <div class="level-badge" id="levelBadge">--</div>
+    </div>
+
+    <!-- Job suggestions -->
+    <div style="margin-bottom:2rem;">
+      <h3 style="margin-bottom:0.5rem;">🎯 Suggested Job Titles</h3>
+      <p style="font-size:0.85rem;color:#9ca3af;margin-bottom:1rem;">
+        Based on your resume skills + interview performance
+      </p>
+      <div class="job-grid" id="jobGrid"></div>
+    </div>
+
+    <!-- Per-question results -->
+    <h3 style="margin-bottom:1rem;">📋 Question Breakdown</h3>
+    <div id="resultsBreakdown"></div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+      <button class="btn-sec" onclick="retryInterview()" style="flex:1;">🔄 Retry Interview</button>
+      <button class="btn-primary" onclick="window.location.href='index.html'" style="flex:1;">📄 New Resume</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>© 2026 Sagnik Dam | AI Resume Analyzer</footer>
+
+<script src="auth.js"></script>
+<script>
+  updateNav();
+
+  const API = "https://ai-powered-recruitment-production.up.railway.app";
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let questions    = [];   // full question objects (with keywords, ideal)
+  let answers      = {};   // { "0": "...", "1": "..." }
+  let currentQ     = 0;
+  let resumeData   = null;
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  window.onload = () => {
+    resumeData = JSON.parse(sessionStorage.getItem("lastAnalysis") || "null");
+    if (!resumeData || !resumeData.keywords || !resumeData.keywords.length) {
+      document.getElementById("noResumeMsg").style.display = "block";
+      document.getElementById("startBtn").disabled = true;
+    }
+  };
+
+  document.getElementById("startBtn").onclick = () => loadQuestions();
+
+  // ── Load questions ─────────────────────────────────────────────────────────
+  async function loadQuestions() {
+    showPanel("loadingPanel");
+    document.getElementById("loadingMsg").textContent = "Generating questions from your resume...";
+
+    try {
+      const res  = await fetch(`${API}/api/interview/questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resume_id:      resumeData.resume_id,
+          matched_skills: resumeData.keywords || [],
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load questions");
+
+      questions = data.full;   // store full objects (with ideal answers)
+      currentQ  = 0;
+      answers   = {};
+
+      renderQuestions();
+      showPanel("questionsPanel");
+
+    } catch (e) {
+      alert("Error loading questions: " + e.message);
+      showPanel("startPanel");
+    }
+  }
+
+  // ── Render current question ────────────────────────────────────────────────
+  function renderQuestions() {
+    const q = questions[currentQ];
+
+    // Progress dots
+    const progress = document.getElementById("qProgress");
+    progress.innerHTML = questions.map((_, i) => `
+      <div class="q-dot ${i === currentQ ? "active" : answers[i] ? "answered" : ""}"></div>
+    `).join("");
+
+    document.getElementById("qSubtitle").textContent =
+      `Question ${currentQ + 1} of ${questions.length}`;
+
+    // Question card
+    document.getElementById("questionArea").innerHTML = `
+      <div class="q-card">
+        <div class="q-meta">
+          <span class="q-num">Q${currentQ + 1}</span>
+          <span class="q-skill">${q.skill || "general"}</span>
+        </div>
+        <p class="q-text">${q.q}</p>
+        <textarea
+          class="q-textarea"
+          id="answerBox"
+          placeholder="Type your answer here..."
+          oninput="updateCharCount(this)"
+        >${answers[currentQ] || ""}</textarea>
+        <div class="char-count" id="charCount">
+          ${(answers[currentQ] || "").split(" ").filter(Boolean).length} words
+        </div>
+      </div>
+    `;
+
+    // Nav buttons
+    document.getElementById("prevBtn").disabled = currentQ === 0;
+    const isLast = currentQ === questions.length - 1;
+    document.getElementById("nextBtn").textContent = isLast ? "Submit Answers ✓" : "Next →";
+    document.getElementById("nextBtn").style.background =
+      isLast ? "linear-gradient(135deg,#059669,#10b981)" : "linear-gradient(135deg,#6366f1,#a855f7)";
+  }
+
+  function updateCharCount(el) {
+    const words = el.value.split(" ").filter(Boolean).length;
+    document.getElementById("charCount").textContent = `${words} words`;
+  }
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
+  function saveCurrentAnswer() {
+    const box = document.getElementById("answerBox");
+    if (box) answers[currentQ] = box.value.trim();
+  }
+
+  function nextQ() {
+    saveCurrentAnswer();
+    if (currentQ < questions.length - 1) {
+      currentQ++;
+      renderQuestions();
+    } else {
+      submitInterview();
+    }
+  }
+
+  function prevQ() {
+    saveCurrentAnswer();
+    if (currentQ > 0) {
+      currentQ--;
+      renderQuestions();
+    }
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  async function submitInterview() {
+    // Check all answered
+    const unanswered = questions.filter((_, i) => !answers[i] || !answers[i].trim());
+    if (unanswered.length > 0) {
+      const go = confirm(`You have ${unanswered.length} unanswered question(s). Submit anyway?`);
+      if (!go) return;
+    }
+
+    showPanel("loadingPanel");
+    document.getElementById("loadingMsg").textContent = "Evaluating your answers...";
+
+    const headers = { "Content-Type": "application/json" };
+    if (isLoggedIn()) headers["Authorization"] = `Bearer ${getToken()}`;
+
+    try {
+      const res = await fetch(`${API}/api/interview/submit`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          resume_id:      resumeData?.resume_id,
+          ats_score:      resumeData?.score || 0,
+          matched_skills: resumeData?.keywords || [],
+          questions,
+          answers,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Submission failed");
+
+      renderResults(data);
+      showPanel("resultsPanel");
+
+    } catch (e) {
+      alert("Error submitting: " + e.message);
+      showPanel("questionsPanel");
+    }
+  }
+
+  // ── Render results ─────────────────────────────────────────────────────────
+  function renderResults(data) {
+    const score = data.overall_score ?? 0;
+    const color = score >= 70 ? "#22c55e" : score >= 45 ? "#f59e0b" : "#ef4444";
+
+    // Big score circle
+    const circle = document.getElementById("bigScore");
+    circle.textContent  = score;
+    circle.style.color  = color;
+    circle.style.borderColor = color;
+
+    document.getElementById("levelBadge").textContent = data.level || "--";
+
+    // Job suggestions
+    const jobGrid = document.getElementById("jobGrid");
+    const jobs = data.job_suggestions || [];
+    if (jobs.length) {
+      jobGrid.innerHTML = jobs.map((j, idx) => `
+        <div class="job-card ${idx === 0 ? "top-pick" : ""}">
+          ${idx === 0 ? '<div style="font-size:0.72rem;color:#22c55e;margin-bottom:4px;">⭐ Best Match</div>' : ""}
+          <div class="job-title">${j.title}</div>
+          <div class="job-match-bar">
+            <div class="job-match-fill" style="width:${j.match}%"></div>
+          </div>
+          <div class="job-match-pct">${j.match}% match · ${j.required_found}/${j.required_total} core skills</div>
+          ${j.missing_skills?.length ? `
+            <div class="job-missing">⚡ Learn: ${j.missing_skills.join(", ")}</div>
+          ` : ""}
+        </div>
+      `).join("");
+    } else {
+      jobGrid.innerHTML = `<p style="color:#9ca3af;font-size:0.9rem;">Upload a resume with more skills for job suggestions.</p>`;
+    }
+
+    // Per-question breakdown
+    const breakdown = document.getElementById("resultsBreakdown");
+    const results   = data.results || [];
+    breakdown.innerHTML = results.map(r => {
+      const cls  = r.score >= 70 ? "pass" : r.score >= 40 ? "warn" : "fail";
+      const pill = r.score >= 70 ? "pill-pass" : r.score >= 40 ? "pill-warn" : "pill-fail";
+      const yourAns = answers[r.id] || "(no answer)";
+      return `
+        <div class="result-q-card ${cls}">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+            <div>
+              <span style="font-size:0.78rem;color:#9ca3af;">Q${r.id+1} · ${r.skill}</span>
+              <p style="font-size:0.92rem;font-weight:500;margin-top:2px;">${r.question}</p>
+            </div>
+            <span class="result-score-pill ${pill}">${r.score}/100</span>
+          </div>
+          <p class="your-answer">Your answer: "${yourAns.slice(0,120)}${yourAns.length>120?"...":""}"</p>
+          <p style="font-size:0.85rem;color:#94a3b8;margin-top:6px;">💬 ${r.feedback}</p>
+          <div class="ideal-box">
+            <strong style="color:#6366f1;font-size:0.78rem;">IDEAL ANSWER:</strong><br/>
+            ${r.ideal}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function retryInterview() {
+    answers  = {};
+    currentQ = 0;
+    showPanel("startPanel");
+  }
+
+  // ── Panel helper ───────────────────────────────────────────────────────────
+  function showPanel(id) {
+    ["startPanel","loadingPanel","questionsPanel","resultsPanel"].forEach(p => {
+      document.getElementById(p).style.display = p === id ? "block" : "none";
+    });
+  }
+</script>
+</body>
+</html>

@@ -2,15 +2,15 @@ import sqlite3
 import os
 import hashlib
 import secrets
+import json
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "resumes.db")
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 def init_db():
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
 
-    # Users table
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,7 +21,6 @@ def init_db():
         )
     """)
 
-    # Sessions table
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             token      TEXT PRIMARY KEY,
@@ -31,7 +30,6 @@ def init_db():
         )
     """)
 
-    # Resumes table (now with user_id + job_description)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS resumes (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,35 +46,50 @@ def init_db():
         )
     """)
 
+    # Interview sessions table
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS interview_sessions (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id         INTEGER,
+            resume_id       INTEGER,
+            questions       TEXT,
+            answers         TEXT,
+            results         TEXT,
+            overall_score   INTEGER,
+            level           TEXT,
+            job_suggestions TEXT,
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id)   REFERENCES users(id),
+            FOREIGN KEY(resume_id) REFERENCES resumes(id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 
 
-# ── Auth helpers ──────────────────────────────────────────────────────────────
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+# ── Auth ──────────────────────────────────────────────────────────────────────
+def hash_password(p: str) -> str:
+    return hashlib.sha256(p.encode()).hexdigest()
 
-def register_user(username: str, email: str, password: str):
+def register_user(username, email, password):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     try:
         cur.execute(
             "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
             (username.strip(), email.strip().lower(), hash_password(password))
         )
         conn.commit()
-        user_id = cur.lastrowid
-        return {"success": True, "user_id": user_id}
+        return {"success": True, "user_id": cur.lastrowid}
     except sqlite3.IntegrityError as e:
-        if "username" in str(e):
-            return {"success": False, "error": "Username already taken"}
-        return {"success": False, "error": "Email already registered"}
+        return {"success": False, "error": "Username already taken" if "username" in str(e) else "Email already registered"}
     finally:
         conn.close()
 
-def login_user(email: str, password: str):
+def login_user(email, password):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute(
         "SELECT id, username FROM users WHERE email=? AND password=?",
         (email.strip().lower(), hash_password(password))
@@ -89,18 +102,18 @@ def login_user(email: str, password: str):
     _create_session(row[0], token)
     return {"success": True, "token": token, "username": row[1], "user_id": row[0]}
 
-def _create_session(user_id: int, token: str):
+def _create_session(user_id, token):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute("INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user_id))
     conn.commit()
     conn.close()
 
-def get_user_from_token(token: str):
+def get_user_from_token(token):
     if not token:
         return None
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute(
         "SELECT u.id, u.username FROM sessions s JOIN users u ON s.user_id=u.id WHERE s.token=?",
         (token,)
@@ -109,30 +122,27 @@ def get_user_from_token(token: str):
     conn.close()
     return {"id": row[0], "username": row[1]} if row else None
 
-def logout_user(token: str):
+def logout_user(token):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute("DELETE FROM sessions WHERE token=?", (token,))
     conn.commit()
     conn.close()
 
 
-# ── Resume helpers ────────────────────────────────────────────────────────────
+# ── Resumes ───────────────────────────────────────────────────────────────────
 def save_resume(user_id, name, score, matched, missing, rank, job_description, recommendations):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     cur.execute(
         """INSERT INTO resumes
-           (user_id, name, score, matched, missing, rank, job_description, recommendations)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+           (user_id,name,score,matched,missing,rank,job_description,recommendations)
+           VALUES (?,?,?,?,?,?,?,?)""",
         (
-            user_id,
-            name,
-            score,
+            user_id, name, score,
             ", ".join(matched) if isinstance(matched, list) else matched,
             ", ".join(missing) if isinstance(missing, list) else missing,
-            rank,
-            job_description or "",
+            rank, job_description or "",
             ", ".join(recommendations) if isinstance(recommendations, list) else recommendations,
         )
     )
@@ -143,7 +153,7 @@ def save_resume(user_id, name, score, matched, missing, rank, job_description, r
 
 def get_all_resumes(user_id=None):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     if user_id:
         cur.execute(
             "SELECT id,name,score,matched,missing,rank,job_description,recommendations,created_at FROM resumes WHERE user_id=? ORDER BY id DESC",
@@ -155,18 +165,12 @@ def get_all_resumes(user_id=None):
         )
     rows = cur.fetchall()
     conn.close()
-    return [
-        {
-            "id": r[0], "name": r[1], "score": r[2],
-            "matched": r[3], "missing": r[4], "rank": r[5],
-            "job_description": r[6], "recommendations": r[7], "date": r[8]
-        }
-        for r in rows
-    ]
+    return [{"id":r[0],"name":r[1],"score":r[2],"matched":r[3],"missing":r[4],
+             "rank":r[5],"job_description":r[6],"recommendations":r[7],"date":r[8]} for r in rows]
 
-def get_resume_by_id(resume_id: int, user_id=None):
+def get_resume_by_id(resume_id, user_id=None):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
+    cur  = conn.cursor()
     if user_id:
         cur.execute(
             "SELECT id,name,score,matched,missing,rank,job_description,recommendations,created_at FROM resumes WHERE id=? AND user_id=?",
@@ -181,8 +185,73 @@ def get_resume_by_id(resume_id: int, user_id=None):
     conn.close()
     if not r:
         return None
+    return {"id":r[0],"name":r[1],"score":r[2],"matched":r[3],"missing":r[4],
+            "rank":r[5],"job_description":r[6],"recommendations":r[7],"date":r[8]}
+
+
+# ── Interview sessions ────────────────────────────────────────────────────────
+def save_interview(user_id, resume_id, questions, answers, results,
+                   overall_score, level, job_suggestions):
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    cur.execute(
+        """INSERT INTO interview_sessions
+           (user_id,resume_id,questions,answers,results,overall_score,level,job_suggestions)
+           VALUES (?,?,?,?,?,?,?,?)""",
+        (
+            user_id, resume_id,
+            json.dumps(questions),
+            json.dumps(answers),
+            json.dumps(results),
+            overall_score, level,
+            json.dumps(job_suggestions),
+        )
+    )
+    conn.commit()
+    iid = cur.lastrowid
+    conn.close()
+    return iid
+
+def get_interview_by_id(interview_id, user_id=None):
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    if user_id:
+        cur.execute(
+            "SELECT id,resume_id,questions,answers,results,overall_score,level,job_suggestions,created_at FROM interview_sessions WHERE id=? AND user_id=?",
+            (interview_id, user_id)
+        )
+    else:
+        cur.execute(
+            "SELECT id,resume_id,questions,answers,results,overall_score,level,job_suggestions,created_at FROM interview_sessions WHERE id=?",
+            (interview_id,)
+        )
+    r = cur.fetchone()
+    conn.close()
+    if not r:
+        return None
     return {
-        "id": r[0], "name": r[1], "score": r[2],
-        "matched": r[3], "missing": r[4], "rank": r[5],
-        "job_description": r[6], "recommendations": r[7], "date": r[8]
+        "id": r[0], "resume_id": r[1],
+        "questions":       json.loads(r[2] or "[]"),
+        "answers":         json.loads(r[3] or "{}"),
+        "results":         json.loads(r[4] or "[]"),
+        "overall_score":   r[5], "level": r[6],
+        "job_suggestions": json.loads(r[7] or "[]"),
+        "date":            r[8],
     }
+
+def get_interviews_for_user(user_id):
+    conn = sqlite3.connect(DB_PATH)
+    cur  = conn.cursor()
+    cur.execute(
+        "SELECT id,resume_id,overall_score,level,job_suggestions,created_at FROM interview_sessions WHERE user_id=? ORDER BY id DESC",
+        (user_id,)
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "id": r[0], "resume_id": r[1], "overall_score": r[2],
+            "level": r[3], "job_suggestions": json.loads(r[4] or "[]"), "date": r[5]
+        }
+        for r in rows
+    ]
