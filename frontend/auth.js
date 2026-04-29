@@ -1,5 +1,7 @@
 // ── Shared auth helpers used across all pages ─────────────────────────────
-const API = "https://ai-powered-recruitment-production.up.railway.app";
+const API = window.location.hostname === "localhost"
+  ? "http://127.0.0.1:5000"
+  : "https://ai-powered-recruitment.onrender.com";
 
 function getToken()    { return localStorage.getItem("token") || ""; }
 function getUsername() { return localStorage.getItem("username") || "Guest"; }
