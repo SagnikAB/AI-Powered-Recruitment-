@@ -40,7 +40,7 @@ AI-Powered-Recruitment/
 │   ├── uploads/               # Uploaded resume files (gitignored)
 │   ├── app.py                 # Flask API
 │   ├── requirements.txt
-│   └── Procfile               # For Railway deployment
+│   └── Procfile               # For Render deployment
 └── frontend/
     ├── index.html             # Main upload page
     ├── history.html           # Dashboard
