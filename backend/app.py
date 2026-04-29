@@ -26,15 +26,27 @@ from core.database import (
 
 # ── App ───────────────────────────────────────────────────────────────────────
 app = Flask(__name__)
+
+# Enable CORS for API routes
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-UPLOAD_FOLDER    = os.path.join(os.path.dirname(__file__), "uploads")
-ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
+# Base directory (safer for cloud environments)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Upload folder setup
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB file limit
 
+# Allowed file types
+ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
+
+# Initialize database
 init_db()
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS

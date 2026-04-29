@@ -4,7 +4,7 @@ import hashlib
 import secrets
 import json
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "resumes.db")
+DB_PATH = os.getenv("DB_PATH", "resumes.db")
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 def init_db():
