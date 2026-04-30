@@ -1,172 +1,165 @@
-# 🤖 AI Powered Recruitment System
+# 🤖 AI-Powered Smart Interview & Resume Evaluation System
 
-> An intelligent resume analyzer that gives instant ATS scores, role-specific rankings, skill gap analysis, and downloadable PDF reports — built with Python + Flask + Vanilla JS.
-
-**Live Demo →** [ai-powered-recruitment-seven.vercel.app](https://ai-powered-recruitment-seven.vercel.app)
+An intelligent web application that automates resume screening and interview evaluation using Machine Learning and Natural Language Processing (NLP).
 
 ---
 
-## ✨ Features
+## 🚀 Features
 
-| Feature | Description |
-|---|---|
-| 📄 **Resume Upload** | Drag & drop PDF, DOC, DOCX |
-| 🎯 **Job Description Matching** | Paste a JD for role-specific ATS scoring |
-| 🤖 **AI Scoring** | Keyword + TF-IDF cosine similarity scoring |
-| 🏆 **Ranking** | Elite / Gold / Silver / Bronze tiers |
-| 💡 **Recommendations** | Skill gap suggestions based on missing keywords |
-| 📥 **PDF Report** | Download a formatted analysis report |
-| 👤 **User Auth** | Register / Login to save and track your history |
-| 📊 **Dashboard** | View all past analyses with score charts |
+* 📄 Upload resumes (PDF/DOC/DOCX)
+* 🧠 AI-based resume analysis
+* 🎯 Job description matching
+* 📊 Resume scoring system
+* 🏆 Candidate ranking (Elite, Gold, Silver, Bronze)
+* 💡 Smart recommendations for improvement
+* 🎤 AI-generated interview questions
+* 📝 Answer evaluation system
+* 📥 PDF report generation
 
 ---
 
-## 🗂 Project Structure
+## 🧠 How It Works
+
+1. User uploads a resume
+2. Text is extracted from the document
+3. Skills and keywords are identified
+4. Resume is scored based on relevance
+5. AI generates interview questions
+6. Answers are evaluated
+7. Final score and recommendations are provided
+
+---
+
+## 🛠️ Tech Stack
+
+**Frontend:**
+
+* HTML, CSS, JavaScript
+
+**Backend:**
+
+* Python (Flask)
+
+**Libraries & Tools:**
+
+* scikit-learn (ML scoring)
+* spaCy (NLP)
+* PyPDF2 / pdfplumber (resume parsing)
+* python-docx
+* reportlab (PDF generation)
+
+---
+
+## 📁 Project Structure
 
 ```
 AI-Powered-Recruitment/
+│
 ├── backend/
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── database.py        # SQLite (users, sessions, resumes)
-│   │   ├── resume_parser.py   # PDF/DOCX text extraction
-│   │   ├── scoring_engine.py  # Keyword + TF-IDF scoring
-│   │   ├── ranking_engine.py  # Score → rank label
-│   │   ├── recommendation.py  # Skill gap suggestions
-│   │   ├── vector_store.py    # Pinecone vector similarity (optional)
-│   │   ├── ml_model.py        # TF-IDF ML model
-│   │   ├── skill_engine.py    # Skill extraction
-│   │   └── pdf_report.py      # ReportLab PDF generation
-│   ├── uploads/               # Uploaded resume files (gitignored)
-│   ├── app.py                 # Flask API
+│   ├── app.py
 │   ├── requirements.txt
-│   └── Procfile               # For Render deployment
-└── frontend/
-    ├── index.html             # Main upload page
-    ├── history.html           # Dashboard
-    ├── login.html             # Login page
-    ├── register.html          # Register page
-    ├── app.js                 # Main JS logic
-    ├── auth.js                # Auth helpers
-    └── style.css              # Styles
+│   └── core/
+│
+├── frontend/
+│   ├── index.html
+│   ├── app.js
+│   └── auth.js
+│
+└── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## ⚙️ Installation (Local Setup)
 
-### Prerequisites
-- Python 3.10+
-- pip
+### 1. Clone the repository
 
-### Local Setup
+```
+git clone https://github.com/your-username/AI-Powered-Recruitment.git
+cd AI-Powered-Recruitment
+```
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/SagnikAB/AI-Powered-Recruitment-.git
-cd AI-Powered-Recruitment-
+### 2. Install dependencies
 
-# 2. Set up backend
+```
 cd backend
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# Mac/Linux
-source .venv/bin/activate
-
 pip install -r requirements.txt
-
-# 3. Run backend
-python app.py
-# → Running on http://localhost:5000
-
-# 4. Open frontend
-# Just open frontend/index.html in your browser
 ```
 
-### Environment Variables
+### 3. Run the backend
 
-Set these in Railway (or a `.env` file locally):
+```
+python app.py
+```
 
-| Variable | Required | Description |
-|---|---|---|
-| `PINECONE_API_KEY` | Optional | Enables vector similarity scoring |
-| `PORT` | Auto-set | Railway sets this automatically |
+### 4. Open frontend
 
-> The app works fully without Pinecone — vector scoring is gracefully skipped.
-
----
-
-## 🌐 Deployment
-
-### Backend → Railway
-1. Push to GitHub
-2. Connect repo to [Railway](https://railway.app)
-3. Set root directory to `backend/`
-4. Add `PINECONE_API_KEY` in Variables (optional)
-5. Railway auto-deploys on every push ✅
-
-### Frontend → Vercel
-1. Connect repo to [Vercel](https://vercel.com)
-2. Set root directory to `frontend/`
-3. Vercel auto-deploys on every push ✅
+Open `frontend/index.html` in your browser
 
 ---
 
-## 🔌 API Reference
+## 🌐 Deployment (Render)
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| `GET`  | `/` | — | Health check |
-| `POST` | `/api/auth/register` | — | Register new user |
-| `POST` | `/api/auth/login` | — | Login, returns token |
-| `POST` | `/api/auth/logout` | Bearer | Logout |
-| `GET`  | `/api/auth/me` | Bearer | Get current user |
-| `POST` | `/api/analyze` | Optional | Analyze resume |
-| `GET`  | `/api/history` | Optional | Get past analyses |
-| `GET`  | `/api/report/:id` | Optional | Download PDF report |
+This project is deployed using **Render**.
 
----
+### Steps:
 
-## 🛠 Tech Stack
+1. Push your code to GitHub
+2. Go to Render → New Web Service
+3. Connect your GitHub repository
+4. Configure:
 
-**Backend**
-- Python 3 · Flask · SQLite
-- scikit-learn (TF-IDF scoring)
-- pdfplumber + PyPDF2 (PDF parsing)
-- python-docx (DOCX parsing)
-- ReportLab (PDF generation)
-- Pinecone (optional vector similarity)
+```
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn app:app
+```
 
-**Frontend**
-- Vanilla HTML · CSS · JavaScript
-- Chart.js (dashboard charts)
-- Deployed on Vercel
+5. Deploy and access your live API
 
 ---
 
-## 📸 Screenshots
+## 📌 API Example
 
-| Upload & Analyze | Dashboard |
-|---|---|
-| Drag & drop resume, paste JD, get instant results | View history, download PDF reports |
+### Analyze Resume
+
+```
+POST /api/analyze
+```
+
+Form Data:
+
+* resume (file)
+* job_description (optional)
 
 ---
 
-## 🤝 Contributing
+## 🎯 Use Cases
 
-Pull requests are welcome! For major changes, open an issue first.
+* Automating recruitment process
+* Resume screening
+* Interview preparation
+* Skill gap analysis
+
+---
+
+## 🚀 Future Scope
+
+* Video interview analysis
+* Voice-based evaluation
+* Advanced AI models (LLMs)
+* Recruiter dashboard
 
 ---
 
 ## 👨‍💻 Author
 
-**Sagnik Dam** · [GitHub @SagnikAB](https://github.com/SagnikAB)
+Sagnik Dam
 
 ---
 
-## 📄 License
+## ⭐ Acknowledgement
 
-MIT License — free to use and modify.
+This project was developed as part of academic work to explore AI-driven recruitment systems.
+
+---
