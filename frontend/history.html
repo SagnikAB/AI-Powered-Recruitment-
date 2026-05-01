@@ -1,145 +1,58 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard · AI Resume Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;650;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(15,23,42,0.6);
-      border: 1px solid #1f2937;
-      border-radius: 14px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.85rem;
-      flex-wrap: wrap;
-    }
-    .h-score {
-      width: 60px; height: 60px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
-      border: 2.5px solid #374151;
-    }
-    .h-score.hi { border-color:#22c55e; color:#22c55e; }
-    .h-score.mi { border-color:#f59e0b; color:#f59e0b; }
-    .h-score.lo { border-color:#ef4444; color:#ef4444; }
-    .h-info { flex: 1; min-width: 140px; }
-    .h-info h4 { font-size:0.95rem; margin-bottom:2px; }
-    .h-info p  { color:#9ca3af; font-size:0.8rem; }
-    .h-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
-    .dl-btn {
-      padding: 6px 14px;
-      background: rgba(5,150,105,0.15);
-      border: 1px solid #059669;
-      color: #10b981;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 600;
-      transition: background 0.2s;
-    }
-    .dl-btn:hover { background: rgba(5,150,105,0.3); }
-    .rank-badge {
-      font-size: 0.78rem;
-      background: rgba(99,102,241,0.15);
-      border: 1px solid #6366f1;
-      color: #a5b4fc;
-      padding: 3px 10px;
-      border-radius: 20px;
-    }
-    .empty {
-      text-align: center; color: #9ca3af;
-      padding: 3rem 0; font-size: 0.95rem;
-    }
-    .chart-box {
-      margin-top: 2rem;
-      background: rgba(15,23,42,0.6);
-      border: 1px solid #1f2937;
-      border-radius: 14px;
-      padding: 1.25rem;
-    }
-    .chart-box h3 { margin-bottom: 1rem; font-size: 1rem; }
-    .stats-row {
-      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
-    }
-    .stat-card {
-      flex: 1; min-width: 120px;
-      background: rgba(15,23,42,0.6);
-      border: 1px solid #1f2937;
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-    }
-    .stat-card .val { font-size: 1.8rem; font-weight: 700; color: #6366f1; }
-    .stat-card .lbl { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; }
-    .login-notice {
-      text-align:center; padding:1.5rem;
-      background:rgba(99,102,241,0.08); border:1px solid #6366f1;
-      border-radius:12px; margin-bottom:1.5rem;
-      font-size:0.9rem; color:#a5b4fc;
-    }
-    .login-notice a { color:#818cf8; font-weight:600; }
-  </style>
 </head>
 <body>
-
 <nav class="navbar">
-  <h2>📊 Dashboard</h2>
-  <div style="display:flex;align-items:center;gap:1rem;">
-    <span id="navUser" style="color:#a5b4fc;display:none;"></span>
+  <div class="brand"><span class="brand-mark">AI</span><span>Dashboard</span></div>
+  <div class="nav-links">
+    <span id="navUser" class="nav-pill" style="display:none;"></span>
     <a href="index.html">Analyze</a>
     <a href="login.html" id="navLogin">Login</a>
     <a href="#" id="navLogout" style="display:none;" onclick="logout()">Logout</a>
   </div>
 </nav>
 
-<main class="container" style="display:block;padding:2rem;">
-  <div style="max-width:760px;margin:0 auto;">
+<main class="page-shell">
+  <div class="page-heading">
+    <h1>Your analyses</h1>
+    <p>Track resume scores, rankings, and downloadable reports.</p>
+  </div>
 
-    <h1 style="margin-bottom:1.5rem;">Your Analyses</h1>
+  <div id="loginNotice" class="notice" style="display:none;">
+    <a href="login.html">Login</a> to save your analyses across devices. Public analyses are shown below.
+  </div>
 
-    <div id="loginNotice" class="login-notice" style="display:none;">
-      💡 <a href="login.html">Login</a> to save your analyses and see them here across devices.
-      Showing all public analyses below.
-    </div>
+  <div class="stats-row" id="statsRow"></div>
+  <div id="historyList"></div>
 
-    <!-- Stats row -->
-    <div class="stats-row" id="statsRow"></div>
-
-    <!-- History list -->
-    <div id="historyList"></div>
-
-    <!-- Chart -->
-    <div class="chart-box" id="chartBox" style="display:none;">
-      <h3>📈 Score Distribution</h3>
-      <canvas id="rankChart" height="120"></canvas>
-    </div>
-
+  <div class="chart-box" id="chartBox" style="display:none;">
+    <h3>Score Distribution</h3>
+    <canvas id="rankChart" height="120"></canvas>
   </div>
 </main>
 
 <footer>© 2026 Sagnik Dam | AI Resume Analyzer</footer>
-
 <script src="auth.js"></script>
 <script>
   updateNav();
-
-  if (!isLoggedIn()) {
-    document.getElementById("loginNotice").style.display = "block";
-  }
+  if (!isLoggedIn()) document.getElementById("loginNotice").style.display = "block";
 
   async function loadHistory() {
     const headers = {};
     if (isLoggedIn()) headers["Authorization"] = `Bearer ${getToken()}`;
 
     try {
-      const res  = await fetch(`${API}/api/history`, { headers });
+      const res = await fetch(`${API}/api/history`, { headers });
       const data = await res.json();
-
       renderStats(data);
       renderList(data);
       renderChart(data);
@@ -149,6 +62,12 @@
     }
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, ch => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
+    }[ch]));
+  }
+
   function scoreClass(s) {
     if (s >= 70) return "hi";
     if (s >= 50) return "mi";
@@ -156,13 +75,16 @@
   }
 
   function renderStats(data) {
-    if (!data.length) return;
-    const scores   = data.map(d => d.score);
-    const avg      = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
-    const best     = Math.max(...scores);
-    const total    = data.length;
-    document.getElementById("statsRow").innerHTML = `
-      <div class="stat-card"><div class="val">${total}</div><div class="lbl">Analyses</div></div>
+    const row = document.getElementById("statsRow");
+    if (!data.length) {
+      row.innerHTML = "";
+      return;
+    }
+    const scores = data.map(d => Number(d.score) || 0);
+    const avg = Math.round(scores.reduce((a,b) => a + b, 0) / scores.length);
+    const best = Math.max(...scores);
+    row.innerHTML = `
+      <div class="stat-card"><div class="val">${data.length}</div><div class="lbl">Analyses</div></div>
       <div class="stat-card"><div class="val">${avg}%</div><div class="lbl">Avg Score</div></div>
       <div class="stat-card"><div class="val">${best}%</div><div class="lbl">Best Score</div></div>
     `;
@@ -171,35 +93,37 @@
   function renderList(data) {
     const el = document.getElementById("historyList");
     if (!data.length) {
-      el.innerHTML = `<div class="empty">No analyses yet. <a href="index.html" style="color:#a5b4fc;">Analyze a resume →</a></div>`;
+      el.innerHTML = `<div class="empty">No analyses yet. <a href="index.html" style="color:#99f6e4;font-weight:800;">Analyze a resume</a></div>`;
       return;
     }
-    el.innerHTML = data.map(d => `
-      <div class="history-item">
-        <div class="h-score ${scoreClass(d.score)}">${d.score}</div>
-        <div class="h-info">
-          <h4>${d.name}</h4>
-          <p>${d.date ? d.date.slice(0,16).replace("T"," ") : ""}
-             &nbsp;·&nbsp; <span class="rank-badge">${d.rank}</span>
-          </p>
-          ${d.job_description ? `<p style="color:#6366f1;font-size:0.78rem;margin-top:3px;">🎯 Custom JD</p>` : ""}
+    el.innerHTML = data.map(d => {
+      const date = d.date ? d.date.slice(0,16).replace("T", " ") : "";
+      return `
+        <div class="history-item">
+          <div class="h-score ${scoreClass(Number(d.score) || 0)}">${escapeHtml(d.score)}</div>
+          <div class="h-info">
+            <h4>${escapeHtml(d.name)}</h4>
+            <p>${escapeHtml(date)} &nbsp;·&nbsp; <span class="rank-badge">${escapeHtml(d.rank)}</span></p>
+            ${d.job_description ? `<p style="color:#99f6e4;margin-top:3px;">Custom job description</p>` : ""}
+          </div>
+          <div class="h-actions">
+            <button class="dl-btn" onclick="downloadReport(${Number(d.id)})">PDF Report</button>
+          </div>
         </div>
-        <div class="h-actions">
-          <button class="dl-btn" onclick="downloadReport(${d.id})">📥 PDF</button>
-        </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
   function renderChart(data) {
     if (!data.length) return;
     document.getElementById("chartBox").style.display = "block";
-    const ranks = { Elite:0, Gold:0, Silver:0, Bronze:0 };
+    const ranks = { Elite: 0, Gold: 0, Silver: 0, Bronze: 0 };
     data.forEach(d => {
-      if (d.rank.includes("Elite"))       ranks.Elite++;
-      else if (d.rank.includes("Gold"))   ranks.Gold++;
-      else if (d.rank.includes("Silver")) ranks.Silver++;
-      else                                ranks.Bronze++;
+      const rank = String(d.rank || "");
+      if (rank.includes("Elite")) ranks.Elite++;
+      else if (rank.includes("Gold")) ranks.Gold++;
+      else if (rank.includes("Silver")) ranks.Silver++;
+      else ranks.Bronze++;
     });
     new Chart(document.getElementById("rankChart"), {
       type: "bar",
@@ -208,15 +132,15 @@
         datasets: [{
           label: "Resumes",
           data: Object.values(ranks),
-          backgroundColor: ["#6366f1","#22c55e","#f59e0b","#ef4444"],
+          backgroundColor: ["#4f46e5", "#14b8a6", "#f59e0b", "#ef4444"],
           borderRadius: 8,
         }]
       },
       options: {
         plugins: { legend: { display: false } },
         scales: {
-          x: { ticks: { color: "#9ca3af" }, grid: { color: "rgba(255,255,255,0.05)" } },
-          y: { ticks: { color: "#9ca3af", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" } }
+          x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
+          y: { ticks: { color: "#94a3b8", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" } }
         }
       }
     });
@@ -224,13 +148,13 @@
 
   async function downloadReport(id) {
     const token = getToken();
-    const url   = `${API}/api/report/${id}${token ? "?token=" + token : ""}`;
+    const url = `${API}/api/report/${id}${token ? "?token=" + token : ""}`;
     try {
-      const res  = await fetch(url);
+      const res = await fetch(url);
       if (!res.ok) { alert("Could not generate PDF."); return; }
       const blob = await res.blob();
       const link = document.createElement("a");
-      link.href  = URL.createObjectURL(blob);
+      link.href = URL.createObjectURL(blob);
       link.download = `resume_report_${id}.pdf`;
       link.click();
     } catch (e) {
@@ -240,6 +164,5 @@
 
   loadHistory();
 </script>
-
 </body>
 </html>

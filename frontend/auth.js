@@ -1,11 +1,10 @@
-// ── Shared auth helpers used across all pages ─────────────────────────────
-const API = window.location.hostname === "localhost"
+﻿const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
   ? "http://127.0.0.1:5000"
   : "https://ai-powered-recruitment.onrender.com";
 
-function getToken()    { return localStorage.getItem("token") || ""; }
+function getToken() { return localStorage.getItem("token") || ""; }
 function getUsername() { return localStorage.getItem("username") || "Guest"; }
-function isLoggedIn()  { return !!getToken(); }
+function isLoggedIn() { return !!getToken(); }
 
 function saveSession(token, username) {
   localStorage.setItem("token", token);
@@ -26,7 +25,6 @@ async function logout() {
   window.location.href = "login.html";
 }
 
-// Update navbar to show logged-in state
 function updateNav() {
   const navUser = document.getElementById("navUser");
   const navLogin = document.getElementById("navLogin");
@@ -35,13 +33,13 @@ function updateNav() {
   if (!navUser) return;
 
   if (isLoggedIn()) {
-    navUser.textContent   = `👤 ${getUsername()}`;
-    navUser.style.display = "inline";
-    if (navLogin)  navLogin.style.display  = "none";
-    if (navLogout) navLogout.style.display = "inline";
+    navUser.textContent = getUsername();
+    navUser.style.display = "inline-flex";
+    if (navLogin) navLogin.style.display = "none";
+    if (navLogout) navLogout.style.display = "inline-flex";
   } else {
-    navUser.style.display  = "none";
-    if (navLogin)  navLogin.style.display  = "inline";
+    navUser.style.display = "none";
+    if (navLogin) navLogin.style.display = "inline-flex";
     if (navLogout) navLogout.style.display = "none";
   }
 }
