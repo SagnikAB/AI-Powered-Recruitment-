@@ -53,7 +53,7 @@ def get_token(req) -> str:
 # ── Health ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def home():
-    return jsonify({"status": "ok", "message": "AI Recruitment API v3 🚀"})
+    return jsonify({"status": "ok", "message": "AI Recruitment API v3"})
 
 
 # ═══════════════════════════════════════════════════════════════════

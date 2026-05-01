@@ -289,13 +289,13 @@ def evaluate_all_answers(questions: list, answers: dict) -> dict:
     overall = int(total_score / max(len(questions), 1))
 
     if overall >= 80:
-        level = "Expert 🏆"
+        level = "Expert"
     elif overall >= 65:
-        level = "Proficient ⭐⭐⭐"
+        level = "Proficient"
     elif overall >= 45:
-        level = "Intermediate ⭐⭐"
+        level = "Intermediate"
     else:
-        level = "Beginner ⭐"
+        level = "Beginner"
 
     return {
         "results":       results,

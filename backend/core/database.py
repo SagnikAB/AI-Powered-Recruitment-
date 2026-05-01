@@ -64,11 +64,23 @@ def init_db():
         )
     """)
 
+    _ensure_column(cur, "resumes", "user_id", "INTEGER")
+    _ensure_column(cur, "resumes", "missing", "TEXT DEFAULT ''")
+    _ensure_column(cur, "resumes", "job_description", "TEXT DEFAULT ''")
+    _ensure_column(cur, "resumes", "recommendations", "TEXT DEFAULT ''")
+
     conn.commit()
     conn.close()
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
+
+def _ensure_column(cur, table, column, definition):
+    cur.execute(f"PRAGMA table_info({table})")
+    columns = {row[1] for row in cur.fetchall()}
+    if column not in columns:
+        cur.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
 def hash_password(p: str) -> str:
     return hashlib.sha256(p.encode()).hexdigest()
 

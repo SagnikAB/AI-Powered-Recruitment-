@@ -19,9 +19,9 @@ try:
     from sentence_transformers import SentenceTransformer
     _st_model = SentenceTransformer("all-MiniLM-L6-v2")
     EMBEDDING_DIM = 384      # MiniLM output size
-    print("✅ sentence-transformers loaded for vector_store")
+    print("sentence-transformers loaded for vector_store")
 except Exception as _e:
-    print(f"⚠️  sentence-transformers unavailable ({_e}) — TF-IDF embeddings active")
+    print(f"sentence-transformers unavailable ({_e}); TF-IDF embeddings active")
 
 
 # ── Pinecone (optional) ───────────────────────────────────────────────────────
@@ -35,11 +35,11 @@ try:
         pc = Pinecone(api_key=_api_key)
         _index = pc.Index("resume-index")
         _pinecone_enabled = True
-        print("✅ Pinecone connected")
+        print("Pinecone connected")
     else:
-        print("⚠️  PINECONE_API_KEY not set — vector scoring disabled")
+        print("PINECONE_API_KEY not set; vector scoring disabled")
 except Exception as e:
-    print(f"⚠️  Pinecone init failed ({e}) — vector scoring disabled")
+    print(f"Pinecone init failed ({e}); vector scoring disabled")
 
 
 # ── Local TF-IDF corpus (fallback when sentence-transformers is absent) ───────

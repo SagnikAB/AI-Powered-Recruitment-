@@ -20,9 +20,9 @@ _st_model = None
 try:
     from sentence_transformers import SentenceTransformer
     _st_model = SentenceTransformer("all-MiniLM-L6-v2")
-    print("✅ sentence-transformers loaded (semantic scoring active)")
+    print("sentence-transformers loaded (semantic scoring active)")
 except Exception as _e:
-    print(f"⚠️  sentence-transformers unavailable ({_e}) — falling back to TF-IDF")
+    print(f"sentence-transformers unavailable ({_e}); falling back to TF-IDF")
 
 
 # ── Default JD used when caller passes nothing ────────────────────────────────

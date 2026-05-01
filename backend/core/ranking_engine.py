@@ -1,9 +1,9 @@
 def get_rank(score):
     if score >= 85:
-        return "Elite 🏆"
+        return "Elite"
     elif score >= 70:
-        return "Gold ⭐⭐⭐"
+        return "Gold"
     elif score >= 50:
-        return "Silver ⭐⭐"
+        return "Silver"
     else:
-        return "Bronze ⭐"
+        return "Bronze"
