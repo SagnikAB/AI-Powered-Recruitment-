@@ -5,5 +5,7 @@ pdfplumber
 PyPDF2
 python-docx
 scikit-learn
-pinecone-client
+numpy
+pinecone
 reportlab
+sentence-transformers
