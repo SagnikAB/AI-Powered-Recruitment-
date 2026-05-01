@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard · AI Resume Analyzer</title>
+  <title>Dashboard - AI Resume Analyzer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;650;700;800;900&display=swap" rel="stylesheet">
@@ -21,22 +21,77 @@
   </div>
 </nav>
 
-<main class="page-shell">
-  <div class="page-heading">
-    <h1>Your analyses</h1>
-    <p>Track resume scores, rankings, and downloadable reports.</p>
+<main class="page-shell dashboard-shell">
+  <div class="page-heading dashboard-heading">
+    <div>
+      <h1>Resume intelligence</h1>
+      <p>Compare performance, spot gaps, and pull reports from one dashboard.</p>
+    </div>
+    <a class="btn btn-primary dashboard-cta" href="index.html">New Analysis</a>
   </div>
 
   <div id="loginNotice" class="notice" style="display:none;">
     <a href="login.html">Login</a> to save your analyses across devices. Public analyses are shown below.
   </div>
 
-  <div class="stats-row" id="statsRow"></div>
-  <div id="historyList"></div>
+  <div class="dashboard-grid">
+    <section class="dashboard-main">
+      <div class="stats-row stats-row-advanced" id="statsRow"></div>
 
-  <div class="chart-box" id="chartBox" style="display:none;">
-    <h3>Score Distribution</h3>
-    <canvas id="rankChart" height="120"></canvas>
+      <div class="dashboard-panel controls-panel">
+        <div class="control-field search-field">
+          <label for="searchInput">Search</label>
+          <input id="searchInput" type="search" placeholder="File name, rank, keyword..."/>
+        </div>
+        <div class="control-field">
+          <label for="rankFilter">Rank</label>
+          <select id="rankFilter">
+            <option value="all">All ranks</option>
+            <option value="Elite">Elite</option>
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+            <option value="Bronze">Bronze</option>
+          </select>
+        </div>
+        <div class="control-field">
+          <label for="sortSelect">Sort</label>
+          <select id="sortSelect">
+            <option value="date_desc">Newest first</option>
+            <option value="score_desc">Highest score</option>
+            <option value="score_asc">Lowest score</option>
+            <option value="name_asc">Name A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dashboard-panel list-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Analysis history</h2>
+            <p id="resultCount">Loading records...</p>
+          </div>
+          <span class="rank-badge" id="activeFilterBadge">All records</span>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </section>
+
+    <aside class="dashboard-side">
+      <div class="dashboard-panel insight-panel" id="insightPanel"></div>
+      <div class="dashboard-panel score-band-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Score health</h2>
+            <p>Distribution by quality band.</p>
+          </div>
+        </div>
+        <div id="scoreBands"></div>
+      </div>
+      <div class="chart-box" id="chartBox" style="display:none;">
+        <h3>Rank Distribution</h3>
+        <canvas id="rankChart" height="180"></canvas>
+      </div>
+    </aside>
   </div>
 </main>
 
@@ -46,6 +101,17 @@
   updateNav();
   if (!isLoggedIn()) document.getElementById("loginNotice").style.display = "block";
 
+  let allAnalyses = [];
+  let rankChart = null;
+
+  const searchInput = document.getElementById("searchInput");
+  const rankFilter = document.getElementById("rankFilter");
+  const sortSelect = document.getElementById("sortSelect");
+
+  searchInput.addEventListener("input", renderDashboard);
+  rankFilter.addEventListener("change", renderDashboard);
+  sortSelect.addEventListener("change", renderDashboard);
+
   async function loadHistory() {
     const headers = {};
     if (isLoggedIn()) headers["Authorization"] = `Bearer ${getToken()}`;
@@ -53,13 +119,45 @@
     try {
       const res = await fetch(`${API}/api/history`, { headers });
       const data = await res.json();
-      renderStats(data);
-      renderList(data);
-      renderChart(data);
+      allAnalyses = Array.isArray(data) ? data : [];
+      renderDashboard();
     } catch (e) {
       document.getElementById("historyList").innerHTML =
         `<div class="empty">Could not load history. Is the server running?</div>`;
+      document.getElementById("resultCount").textContent = "No records loaded";
     }
+  }
+
+  function renderDashboard() {
+    const filtered = getFilteredData();
+    renderStats(allAnalyses);
+    renderInsights(allAnalyses);
+    renderScoreBands(allAnalyses);
+    renderList(filtered);
+    renderChart(allAnalyses);
+    updateFilterMeta(filtered);
+  }
+
+  function getFilteredData() {
+    const term = searchInput.value.trim().toLowerCase();
+    const rank = rankFilter.value;
+    const sort = sortSelect.value;
+
+    return allAnalyses
+      .filter(d => {
+        const haystack = [
+          d.name, d.rank, d.matched, d.missing, d.recommendations, d.job_description
+        ].join(" ").toLowerCase();
+        const matchesTerm = !term || haystack.includes(term);
+        const matchesRank = rank === "all" || String(d.rank || "").includes(rank);
+        return matchesTerm && matchesRank;
+      })
+      .sort((a, b) => {
+        if (sort === "score_desc") return scoreOf(b) - scoreOf(a);
+        if (sort === "score_asc") return scoreOf(a) - scoreOf(b);
+        if (sort === "name_asc") return String(a.name || "").localeCompare(String(b.name || ""));
+        return new Date(b.date || 0) - new Date(a.date || 0);
+      });
   }
 
   function escapeHtml(value) {
@@ -68,10 +166,26 @@
     }[ch]));
   }
 
+  function scoreOf(d) {
+    return Number(d.score) || 0;
+  }
+
   function scoreClass(s) {
     if (s >= 70) return "hi";
     if (s >= 50) return "mi";
     return "lo";
+  }
+
+  function splitList(value) {
+    return String(value || "")
+      .split(",")
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+
+  function formatDate(value) {
+    if (!value) return "No date";
+    return String(value).slice(0, 16).replace("T", " ");
   }
 
   function renderStats(data) {
@@ -80,38 +194,143 @@
       row.innerHTML = "";
       return;
     }
-    const scores = data.map(d => Number(d.score) || 0);
+
+    const scores = data.map(scoreOf);
     const avg = Math.round(scores.reduce((a,b) => a + b, 0) / scores.length);
     const best = Math.max(...scores);
+    const needsWork = data.filter(d => scoreOf(d) < 50).length;
+    const jdCount = data.filter(d => d.job_description).length;
+
     row.innerHTML = `
-      <div class="stat-card"><div class="val">${data.length}</div><div class="lbl">Analyses</div></div>
-      <div class="stat-card"><div class="val">${avg}%</div><div class="lbl">Avg Score</div></div>
+      <div class="stat-card"><div class="val">${data.length}</div><div class="lbl">Total Analyses</div></div>
+      <div class="stat-card"><div class="val">${avg}%</div><div class="lbl">Average Score</div></div>
       <div class="stat-card"><div class="val">${best}%</div><div class="lbl">Best Score</div></div>
+      <div class="stat-card"><div class="val">${needsWork}</div><div class="lbl">Below 50%</div></div>
+      <div class="stat-card"><div class="val">${jdCount}</div><div class="lbl">Role-Specific</div></div>
     `;
+  }
+
+  function renderInsights(data) {
+    const panel = document.getElementById("insightPanel");
+    if (!data.length) {
+      panel.innerHTML = `
+        <div class="panel-heading"><div><h2>Insights</h2><p>No data yet.</p></div></div>
+        <a class="btn btn-primary" href="index.html">Run First Analysis</a>
+      `;
+      return;
+    }
+
+    const sortedByScore = [...data].sort((a, b) => scoreOf(b) - scoreOf(a));
+    const sortedByDate = [...data].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    const best = sortedByScore[0];
+    const latest = sortedByDate[0];
+    const avg = Math.round(data.map(scoreOf).reduce((a,b) => a + b, 0) / data.length);
+    const action = avg >= 70 ? "Maintain keyword coverage and tailor each resume to the role." :
+      avg >= 50 ? "Push more measurable impact and job-specific keywords." :
+      "Add stronger project outcomes, quantified results, and missing core skills.";
+
+    panel.innerHTML = `
+      <div class="panel-heading">
+        <div>
+          <h2>Insights</h2>
+          <p>Best and latest activity.</p>
+        </div>
+      </div>
+      <div class="insight-stack">
+        <div class="insight-card">
+          <span>Best performer</span>
+          <strong>${escapeHtml(best.name)}</strong>
+          <p>${scoreOf(best)}% · ${escapeHtml(best.rank || "--")}</p>
+        </div>
+        <div class="insight-card">
+          <span>Latest upload</span>
+          <strong>${escapeHtml(latest.name)}</strong>
+          <p>${formatDate(latest.date)}</p>
+        </div>
+        <div class="insight-card">
+          <span>Next action</span>
+          <strong>${avg}% average</strong>
+          <p>${escapeHtml(action)}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderScoreBands(data) {
+    const el = document.getElementById("scoreBands");
+    const bands = [
+      { label: "Strong", min: 70, max: 100, className: "good" },
+      { label: "Moderate", min: 50, max: 69, className: "warn" },
+      { label: "Needs work", min: 0, max: 49, className: "bad" },
+    ];
+
+    if (!data.length) {
+      el.innerHTML = `<div class="empty compact">No scores yet.</div>`;
+      return;
+    }
+
+    el.innerHTML = bands.map(band => {
+      const count = data.filter(d => {
+        const score = scoreOf(d);
+        return score >= band.min && score <= band.max;
+      }).length;
+      const pct = Math.round((count / data.length) * 100);
+      return `
+        <div class="score-band">
+          <div class="score-band-top">
+            <span>${band.label}</span>
+            <strong>${count}</strong>
+          </div>
+          <div class="mini-bar"><div class="${band.className}" style="width:${pct}%"></div></div>
+        </div>
+      `;
+    }).join("");
   }
 
   function renderList(data) {
     const el = document.getElementById("historyList");
-    if (!data.length) {
+    if (!allAnalyses.length) {
       el.innerHTML = `<div class="empty">No analyses yet. <a href="index.html" style="color:#99f6e4;font-weight:800;">Analyze a resume</a></div>`;
       return;
     }
+    if (!data.length) {
+      el.innerHTML = `<div class="empty">No analyses match the current filters.</div>`;
+      return;
+    }
+
     el.innerHTML = data.map(d => {
-      const date = d.date ? d.date.slice(0,16).replace("T", " ") : "";
+      const score = scoreOf(d);
+      const matched = splitList(d.matched).slice(0, 4);
+      const missing = splitList(d.missing).slice(0, 3);
       return `
-        <div class="history-item">
-          <div class="h-score ${scoreClass(Number(d.score) || 0)}">${escapeHtml(d.score)}</div>
+        <article class="history-item history-item-rich">
+          <div class="h-score ${scoreClass(score)}">${score}</div>
           <div class="h-info">
-            <h4>${escapeHtml(d.name)}</h4>
-            <p>${escapeHtml(date)} &nbsp;·&nbsp; <span class="rank-badge">${escapeHtml(d.rank)}</span></p>
-            ${d.job_description ? `<p style="color:#99f6e4;margin-top:3px;">Custom job description</p>` : ""}
+            <div class="history-title-row">
+              <h4>${escapeHtml(d.name)}</h4>
+              <span class="rank-badge">${escapeHtml(d.rank || "--")}</span>
+            </div>
+            <p>${escapeHtml(formatDate(d.date))}${d.job_description ? " · Role-specific" : ""}</p>
+            <div class="history-keywords">
+              ${matched.map(k => `<span class="chip good">${escapeHtml(k)}</span>`).join("")}
+              ${missing.map(k => `<span class="chip bad">${escapeHtml(k)}</span>`).join("")}
+            </div>
           </div>
-          <div class="h-actions">
+          <div class="history-score-meta">
+            <div class="mini-bar"><div class="${score >= 70 ? "good" : score >= 50 ? "warn" : "bad"}" style="width:${score}%"></div></div>
             <button class="dl-btn" onclick="downloadReport(${Number(d.id)})">PDF Report</button>
           </div>
-        </div>
+        </article>
       `;
     }).join("");
+  }
+
+  function updateFilterMeta(data) {
+    const count = document.getElementById("resultCount");
+    const badge = document.getElementById("activeFilterBadge");
+    const total = allAnalyses.length;
+    count.textContent = `${data.length} of ${total} record${total === 1 ? "" : "s"} shown`;
+    badge.textContent = rankFilter.value === "all" ? "All records" : `${rankFilter.value} only`;
   }
 
   function renderChart(data) {
@@ -125,23 +344,21 @@
       else if (rank.includes("Silver")) ranks.Silver++;
       else ranks.Bronze++;
     });
-    new Chart(document.getElementById("rankChart"), {
-      type: "bar",
+
+    if (rankChart) rankChart.destroy();
+    rankChart = new Chart(document.getElementById("rankChart"), {
+      type: "doughnut",
       data: {
         labels: Object.keys(ranks),
         datasets: [{
-          label: "Resumes",
           data: Object.values(ranks),
           backgroundColor: ["#4f46e5", "#14b8a6", "#f59e0b", "#ef4444"],
-          borderRadius: 8,
+          borderWidth: 0,
         }]
       },
       options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
-          y: { ticks: { color: "#94a3b8", stepSize: 1 }, grid: { color: "rgba(255,255,255,0.05)" } }
-        }
+        cutout: "64%",
+        plugins: { legend: { position: "bottom", labels: { color: "#94a3b8", boxWidth: 10 } } },
       }
     });
   }

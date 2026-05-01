@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register · AI Resume Analyzer</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .auth-card {
+      background: rgba(30,41,59,0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid #1f2937;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .auth-card h1 { font-size:1.6rem; text-align:center; margin-bottom:0.4rem; }
+    .auth-card p.sub { text-align:center; color:#9ca3af; font-size:0.9rem; margin-bottom:2rem; }
+    .field { margin-bottom: 1.1rem; }
+    .field label { display:block; font-size:0.85rem; color:#d1d5db; margin-bottom:6px; }
+    .field input {
+      width:100%; padding:0.75rem 1rem;
+      background:#0f172a; border:1px solid #374151;
+      border-radius:10px; color:#e5e7eb;
+      font-size:0.95rem; outline:none; transition:border 0.2s;
+    }
+    .field input:focus { border-color: #6366f1; }
+    .err-msg {
+      background:rgba(239,68,68,0.12); border:1px solid #ef4444;
+      color:#ef4444; padding:10px 14px; border-radius:8px;
+      font-size:0.88rem; margin-bottom:1rem; display:none;
+    }
+    .ok-msg {
+      background:rgba(34,197,94,0.12); border:1px solid #22c55e;
+      color:#22c55e; padding:10px 14px; border-radius:8px;
+      font-size:0.88rem; margin-bottom:1rem; display:none;
+    }
+    .auth-link { text-align:center; margin-top:1.25rem; font-size:0.88rem; color:#9ca3af; }
+    .auth-link a { color:#a5b4fc; text-decoration:none; }
+    .auth-link a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <h2>🤖 AI Resume Analyzer</h2>
+    <a href="index.html">Home</a>
+  </nav>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Create Account 🚀</h1>
+      <p class="sub">Save your analyses and track your progress</p>
+
+      <div class="err-msg" id="errMsg"></div>
+      <div class="ok-msg"  id="okMsg"></div>
+
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="sagnik123"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="you@example.com"/>
+      </div>
+      <div class="field">
+        <label>Password <span style="color:#9ca3af;font-size:0.8rem;">(min 6 chars)</span></label>
+        <input type="password" id="password" placeholder="••••••••"/>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <input type="password" id="confirm" placeholder="••••••••"/>
+      </div>
+
+      <button id="regBtn">Create Account</button>
+
+      <div class="auth-link">
+        Already have an account? <a href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    if (isLoggedIn()) window.location.href = "index.html";
+
+    document.getElementById("regBtn").onclick = async () => {
+      const username = document.getElementById("username").value.trim();
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirm  = document.getElementById("confirm").value.trim();
+      const errMsg   = document.getElementById("errMsg");
+      const okMsg    = document.getElementById("okMsg");
+      const btn      = document.getElementById("regBtn");
+
+      errMsg.style.display = "none";
+      okMsg.style.display  = "none";
+
+      if (!username || !email || !password || !confirm) {
+        errMsg.textContent   = "Please fill in all fields.";
+        errMsg.style.display = "block"; return;
+      }
+      if (password !== confirm) {
+        errMsg.textContent   = "Passwords do not match.";
+        errMsg.style.display = "block"; return;
+      }
+      if (password.length < 6) {
+        errMsg.textContent   = "Password must be at least 6 characters.";
+        errMsg.style.display = "block"; return;
+      }
+
+      btn.disabled    = true;
+      btn.textContent = "Creating account...";
+
+      try {
+        const res  = await fetch(`${API}/api/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          errMsg.textContent   = data.error || "Registration failed.";
+          errMsg.style.display = "block"; return;
+        }
+
+        okMsg.textContent  = "Account created! Redirecting to login...";
+        okMsg.style.display = "block";
+        setTimeout(() => window.location.href = "login.html", 1500);
+
+      } catch (e) {
+        errMsg.textContent   = "Cannot connect to server.";
+        errMsg.style.display = "block";
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "Create Account";
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+/* ── Reset ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #020617, #0f172a);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+/* ── Navbar ───────────────────────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1f2937;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.navbar h2 { font-size: 1.1rem; }
+.navbar a {
+  color: #a5b4fc;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.navbar a:hover { color: #6366f1; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.hero {
+  text-align: center;
+  padding: 3.5rem 1rem 1rem;
+}
+.hero h1 {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.hero p { color: #9ca3af; }
+
+/* ── Container ────────────────────────────────────────────────────────── */
+.container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem 3rem;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────── */
+.card {
+  background: rgba(30, 41, 59, 0.65);
+  backdrop-filter: blur(20px);
+  padding: 2rem;
+  border-radius: 20px;
+  width: 440px;
+  max-width: 100%;
+  text-align: center;
+  border: 1px solid #1f2937;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.card h2 { margin-bottom: 1.1rem; }
+
+/* ── Button ───────────────────────────────────────────────────────────── */
+button {
+  padding: 12px 20px;
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  border: none;
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Drop zone ────────────────────────────────────────────────────────── */
+.drop-zone {
+  border: 2px dashed #6366f1;
+  padding: 2rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+  line-height: 1.7;
+}
+.drop-zone p    { font-size: 1rem; }
+.drop-zone span { font-size: 0.82rem; color: #9ca3af; }
+.drop-zone:hover, .drop-zone.dragover {
+  background: rgba(99,102,241,0.08);
+  border-color: #a855f7;
+}
+
+/* ── Loading ──────────────────────────────────────────────────────────── */
+.loading {
+  margin-top: 1rem;
+  color: #a5b4fc;
+  font-size: 0.9rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ── Progress bar ─────────────────────────────────────────────────────── */
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #1e293b;
+  border-radius: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.8s ease;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 1.5rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+  border-top: 1px solid #1f2937;
+}
